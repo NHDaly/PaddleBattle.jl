@@ -48,29 +48,29 @@ function runApp(win, renderer, iters = nothing)
                  enterPauseGameLoop()
                  unpause!(timer)
             end
-
-            # Render
-            SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255)
-            SDL_RenderClear(renderer)
-
-            render(ball, cam, renderer)
-            render(paddleA, cam, renderer)
-            render(paddleB, cam, renderer)
-            renderScore()
-            renderFPS(last_10_frame_times)
-
-            SDL_RenderPresent(renderer)
-
-            # Update
-            dt = elapsed(timer)
-            start!(timer)
-            last_10_frame_times = push!(last_10_frame_times, dt)
-            if length(last_10_frame_times) > 10; shift!(last_10_frame_times) ; end
-
-            performUpdates!(dt)
-
-            i += 1
         end
+
+        # Render
+        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255)
+        SDL_RenderClear(renderer)
+
+        render(ball, cam, renderer)
+        render(paddleA, cam, renderer)
+        render(paddleB, cam, renderer)
+        renderScore()
+        renderFPS(last_10_frame_times)
+
+        SDL_RenderPresent(renderer)
+
+        # Update
+        dt = elapsed(timer)
+        start!(timer)
+        last_10_frame_times = push!(last_10_frame_times, dt)
+        if length(last_10_frame_times) > 10; shift!(last_10_frame_times) ; end
+
+        performUpdates!(dt)
+
+        i += 1
         sleep(0.01)
     end
 end
@@ -101,10 +101,10 @@ function performUpdates!(dt)
     if willCollide(ball, paddleB, dt); collide!(ball, paddleB); end
     if ball.pos.y > winHeight/2.
         scoreB += 1
-        ball = Ball(WorldPos(0,0), Vector2D(rand(-ballSpeed:ballSpeed),-ballSpeed))
+        ball = Ball(WorldPos(0,0), Vector2D(rand(-ballSpeed:ballSpeed), rand([ballSpeed,-ballSpeed])))
     elseif ball.pos.y < -winHeight/2.
         scoreA += 1
-        ball = Ball(WorldPos(0,0), Vector2D(rand(-ballSpeed:ballSpeed),-ballSpeed))
+        ball = Ball(WorldPos(0,0), Vector2D(rand(-ballSpeed:ballSpeed), rand([ballSpeed,-ballSpeed])))
     end
     if ball.pos.x > winWidth/2.
         ball.vel = Vector2D(-abs(ball.vel.x), ball.vel.y)
@@ -177,17 +177,17 @@ function enterPauseGameLoop()
             if (t == SDL_KEYDOWN || t == SDL_KEYUP);  handleKeyPress(e,t);
             elseif (t == SDL_QUIT);  SDL_Quit(); return;
             end
-
-            # Render
-            screenRect = SDL_Rect(0,0, winWidth, winHeight)
-            SDL_RenderCopy(renderer, sshot, Ref(screenRect), Ref(screenRect))
-            SDL_SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
-            SDL_RenderFillRect(renderer, Ref(screenRect))
-            renderText(renderer, "PAUSED", ScreenPixelPos(winWidth/2, winHeight/2))
-            SDL_RenderPresent(renderer)
-
-            # Update
         end
+
+        # Render
+        screenRect = SDL_Rect(0,0, winWidth, winHeight)
+        SDL_RenderCopy(renderer, sshot, Ref(screenRect), Ref(screenRect))
+        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
+        SDL_RenderFillRect(renderer, Ref(screenRect))
+        renderText(renderer, "PAUSED", ScreenPixelPos(winWidth/2, winHeight/2))
+        SDL_RenderPresent(renderer)
+
+        # Update
         sleep(0.01)
     end
 end
