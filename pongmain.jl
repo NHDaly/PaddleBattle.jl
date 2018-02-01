@@ -1,84 +1,120 @@
-workspace()
-using SDL2
+#module PongMain
 
+#using SDL2
+include("/Users/daly/.julia/v0.6/SDL2/src/SDL2.jl")
+
+include("timing.jl")
 include("objects.jl")
 include("display.jl")
 
-#SDL_Event() = [SDL_Event(NTuple{56, Uint8}(zeros(56,1)))]
-SDL_Event() = Array{UInt8}(zeros(56))
-e = SDL_Event()
-winWidth, winHeight = 800, 600
+const winWidth, winHeight = 800, 600
 function makeWinRenderer()
     win = SDL_CreateWindow("Hello World!", Int32(100), Int32(100), Int32(winWidth), Int32(winHeight), Int32(SDL_WINDOW_SHOWN))
     SDL_SetWindowResizable(win,true)
 
     renderer = SDL_CreateRenderer(win, Int32(-1), Int32(SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC))
+    #renderer = SDL_CreateRenderer(win, Int32(-1), Int32(0))
     return win,renderer
 end
 
-win,renderer = makeWinRenderer()
-SDL_GetWindowSize(win, pointer([winWidth]), pointer([winHeight]))
-paddleSpeed = 10
-paddleA = Paddle(WorldPos(0,200),200)
-paddleB = Paddle(WorldPos(0,-200),200)
-ball = Ball(WorldPos(0,0), Vector2D(0,-5))
-cam = Camera(WorldPos(0,0), winWidth, winHeight)
-SDL_PumpEvents()
-scoreA = 0
-scoreB = 0
-function runApp(iters = nothing)
-    global ball,scoreA,scoreB
+const paddleSpeed = 1000
+const ballSpeed = 250
+const paddleA = Paddle(WorldPos(0,200),200)
+const paddleB = Paddle(WorldPos(0,-200),200)
+const ball = Ball(WorldPos(0,0), Vector2D(0,-ballSpeed))
+const cam = Camera(WorldPos(0,0), winWidth, winHeight)
+const scoreA = 0
+const scoreB = 0
+const paused = false
+const last_10_frame_times = [1.]
+const timer = Timer()
+function runApp(win, renderer, iters = nothing)
+    global ball,scoreA,scoreB,last_10_frame_times
+    start!(timer)
     i = 1
     while iters == nothing || i < iters
         x,y = Int[1], Int[1]
 
-        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255)
-        SDL_RenderClear(renderer)
+        hadEvents = true
+        while hadEvents
+            e,hadEvents = pollEvent!()
+            t = getEventType(e)
+            if (t == SDL_KEYDOWN || t == SDL_KEYUP);  handleKeyPress(e,t);
+            elseif (t == SDL_QUIT);  SDL_Quit(); return;
+            end
 
-        e = pollEvent!()
-        t = getEventType(e)
-        if (t == SDL_KEYDOWN);  handleKeyPress(e,t);
-        elseif (t == SDL_KEYUP);  handleKeyPress(e,t);
-        elseif (t == SDL_QUIT);  SDL_Quit(); return;
-        end
+            SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255)
+            SDL_RenderClear(renderer)
 
-        render(ball, cam, renderer)
-        render(paddleA, cam, renderer)
-        render(paddleB, cam, renderer)
-        renderScore()
+            render(ball, cam, renderer)
+            render(paddleA, cam, renderer)
+            render(paddleB, cam, renderer)
+            renderScore()
+            renderFPS(last_10_frame_times)
 
-        SDL_RenderPresent(renderer)
-        update!(ball)
-        update!(paddleA, paddleAKeys)
-        update!(paddleB, paddleBKeys)
-        if isColliding(ball, paddleA); collide(ball, paddleA); end
-        if isColliding(ball, paddleB); collide(ball, paddleB); end
-        if ball.pos.y > winHeight/2.
-            scoreB += 1
-            ball = Ball(WorldPos(0,0), Vector2D(rand(-5:5),-5))
-        elseif ball.pos.y < -winHeight/2.
-            scoreA += 1
-            ball = Ball(WorldPos(0,0), Vector2D(rand(-5:5),-5))
+            SDL_RenderPresent(renderer)
+
+            dt = elapsed(timer)
+            start!(timer)
+            last_10_frame_times = push!(last_10_frame_times, dt)
+            if length(last_10_frame_times) > 10; shift!(last_10_frame_times) ; end
+
+            performUpdates!(dt)
+            i += 1
         end
-        if ball.pos.x > winWidth/2. || ball.pos.x < -winWidth/2.
-            ball.vel = Vector2D(-ball.vel.x, ball.vel.y)
-        end
-        sleep(0.0001)
-        i += 1
+        sleep(0.01)
     end
 end
 
 function pollEvent!()
+    #SDL_Event() = [SDL_Event(NTuple{56, Uint8}(zeros(56,1)))]
     SDL_Event() = Array{UInt8}(zeros(56))
     e = SDL_Event()
-    SDL_PollEvent(e)
-    return e
+    success = (SDL_PollEvent(e) != 0)
+    return e,success
 end
 function getEventType(e)
     # HAHA This is janky as hell. There has to be a better way to implement a Union...
     x = UInt32(parse("0b"*join(map(bits,  e[4:-1:1]))))
 end
 
+function performUpdates!(dt)
+    global ball, paddleA, paddleB
+    #if didCollide(ball, paddleA, dt);
+    #     ball.pos = ball.pos - ball.vel  # undo update
+    #     collide!(ball, paddleA);
+    #end
+    #if didCollide(ball, paddleB, dt);
+    #     ball.pos = ball.pos - ball.vel  # undo update
+    #     collide!(ball, paddleB);
+    #end
+    if willCollide(ball, paddleA, dt); collide!(ball, paddleA); end
+    if willCollide(ball, paddleB, dt); collide!(ball, paddleB); end
+    if ball.pos.y > winHeight/2.
+        scoreB += 1
+        ball = Ball(WorldPos(0,0), Vector2D(rand(-ballSpeed:ballSpeed),-ballSpeed))
+    elseif ball.pos.y < -winHeight/2.
+        scoreA += 1
+        ball = Ball(WorldPos(0,0), Vector2D(rand(-ballSpeed:ballSpeed),-ballSpeed))
+    end
+    if ball.pos.x > winWidth/2.
+        ball.vel = Vector2D(-abs(ball.vel.x), ball.vel.y)
+    elseif ball.pos.x < -winWidth/2.
+        ball.vel = Vector2D(abs(ball.vel.x), ball.vel.y)
+    end
+    if (willCollide(ball, paddleA,dt) || willCollide(ball, paddleB,dt))
+        # STUCK GOING TOO FAST
+        slowed_dt = dt
+        while (willCollide(ball, paddleA, slowed_dt) || willCollide(ball, paddleB, slowed_dt))
+            slowed_dt *= .1
+        end
+        update!(ball, slowed_dt)
+    else
+        update!(ball, dt)
+    end
+    update!(paddleA, paddleAKeys, dt)
+    update!(paddleB, paddleBKeys, dt)
+end
 
 mutable struct KeyControls
     rightDown::Bool
@@ -91,21 +127,30 @@ function handleKeyPress(e,t)
     keySym = UInt32(parse("0b"*join(map(bits,  e[24:-1:21]))))
     keyDown = (t == SDL_KEYDOWN)
     if (keySym == SDLK_LEFT)
-        paddleAKeys.leftDown = keyDown
-    elseif (keySym == SDLK_RIGHT)
-        paddleAKeys.rightDown = keyDown
-    elseif (keySym == SDLK_a)
         paddleBKeys.leftDown = keyDown
-    elseif (keySym == SDLK_d)
+    elseif (keySym == SDLK_RIGHT)
         paddleBKeys.rightDown = keyDown
+    elseif (keySym == SDLK_a)
+        paddleAKeys.leftDown = keyDown
+    elseif (keySym == SDLK_d)
+        paddleAKeys.rightDown = keyDown
+    elseif (keySym == SDLK_ESCAPE)
+        pauseGame();
     end
 end
 
 font = TTF_OpenFont("../assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf", 26)
 #font = TTF_OpenFont("../assets/fonts/Bitstream-Vera-Sans-Mono/VeraMono.ttf", 23)
 function renderScore()
-   txt = "Player1: $scoreA     Player2: $scoreB"
-
+   txt = "Player 1: $scoreA     Player 2: $scoreB"
+    renderText(txt, ScreenPixelPos(winWidth/2, 20))
+end
+function renderFPS(last_10_frame_times)
+    fps = Int(floor(1./mean(last_10_frame_times)))
+    txt = "FPS: $fps"
+    renderText(txt, ScreenPixelPos(winWidth*1/5, 200))
+end
+function renderText(txt, pos)
    text = TTF_RenderText_Blended(font, txt, SDL_Color(20,20,20,255))
    tex = SDL_CreateTextureFromSurface(renderer,text)
 
@@ -113,13 +158,20 @@ function renderScore()
    TTF_SizeText(font, txt, pointer(fx), pointer(fy))
    fx,fy = fx[1],fy[1]
 
-   SDL_RenderCopy(renderer, tex, C_NULL, pointer_from_objref(SDL_Rect(winWidth/2-fx/2, 20,fx,fy)))
+   SDL_RenderCopy(renderer, tex, C_NULL, pointer_from_objref(SDL_Rect(Int(floor(pos.x-fx/2.)), Int(floor(pos.y-fy/2.)),fx,fy)))
    SDL_FreeSurface(tex)
 
 end
 
-renderScore()
+Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
+    win,renderer = makeWinRenderer()
+    SDL_GetWindowSize(win, pointer([winWidth]), pointer([winHeight]))
+    ball.pos = WorldPos(0,0)
+    ball.vel = Vector2D(0,-ballSpeed)
+    runApp(win, renderer)
+    return 0
+end
 
-ball.pos = WorldPos(0,0)
-ball.vel = Vector2D(0,-5)
-runApp()
+#end # module
+
+# PongMain.julia_main(String[])
