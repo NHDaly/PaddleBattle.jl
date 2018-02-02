@@ -7,6 +7,8 @@ include("timing.jl")
 include("objects.jl")
 include("display.jl")
 
+const kGAME_NAME = "Power Pong!"
+
 winWidth, winHeight = Int32(800), Int32(600)
 function makeWinRenderer()
     win = SDL_CreateWindow("Hello World!", Int32(100), Int32(100), winWidth, winHeight, UInt32(SDL_WINDOW_SHOWN))
@@ -50,20 +52,21 @@ cam = Camera(WorldPos(0,0), winWidth, winHeight)
 scoreA = 0
 scoreB = 0
 paused = false
+playing = true
 last_10_frame_times = [1.]
 timer = Timer()
 function runApp(win, renderer, iters = nothing)
-    global ball,scoreA,scoreB,last_10_frame_times,paused
+    global ball,scoreA,scoreB,last_10_frame_times,paused,playing
     start!(timer)
     i = 1
-    while iters == nothing || i < iters
+    while playing && (iters == nothing || i < iters)
         hadEvents = true
         while hadEvents
             # Handle Events
             e,hadEvents = pollEvent!()
             t = getEventType(e)
             if (t == SDL_KEYDOWN || t == SDL_KEYUP);  handleKeyPress(e,t);
-            elseif (t == SDL_QUIT);  SDL_Quit(); return;
+            elseif (t == SDL_QUIT);  SDL_Quit(); playing = false;
             end
 
             if (paused)
@@ -95,6 +98,9 @@ function runApp(win, renderer, iters = nothing)
 
         i += 1
         sleep(0.01)
+    end
+    if (playing == false)
+        quit()
     end
 end
 
@@ -192,9 +198,13 @@ function getScreenshot(renderer)
     SDL_CreateTextureFromSurface(renderer, sshot_ptr)
 end
 
+buttons = [
+         Button(WorldPos(0, -56), 200, 30, "Continue", 20),
+         Button(WorldPos(0, -90), 200, 30, "Quit", 20)
+     ]
 function enterPauseGameLoop()
     sshot = getScreenshot(renderer)
-    global paused
+    global paused,playing
     while (paused)
         hadEvents = true
         while hadEvents
@@ -202,7 +212,11 @@ function enterPauseGameLoop()
             e,hadEvents = pollEvent!()
             t = getEventType(e)
             if (t == SDL_KEYDOWN || t == SDL_KEYUP);  handleKeyPress(e,t);
-            elseif (t == SDL_QUIT);  SDL_Quit(); return;
+            elseif (t == SDL_MOUSEBUTTONUP || t == SDL_MOUSEBUTTONDOWN)
+                 b = handleMouseClickButton!(e,t);
+                 if (b != nothing && b.text=="Continue") paused=false;
+                 elseif (b != nothing && b.text=="Quit") SDL_Quit(); paused=false; playing=false; return; end
+            elseif (t == SDL_QUIT);  SDL_Quit(); playing=false; return;
             end
         end
 
@@ -211,7 +225,11 @@ function enterPauseGameLoop()
         SDL_RenderCopy(renderer, sshot, Ref(screenRect), Ref(screenRect))
         SDL_SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
         SDL_RenderFillRect(renderer, Ref(screenRect))
-        renderText(renderer, "PAUSED", ScreenPixelPos(winWidth/2, winHeight/2))
+        renderText(renderer, "$kGAME_NAME", ScreenPixelPos(winWidth/2, winHeight/2 - 40); fontSize=40)
+        renderText(renderer, "Main Menu", ScreenPixelPos(winWidth/2, winHeight/2); fontSize = 26)
+        for b in buttons
+            render(renderer, b)
+        end
         SDL_RenderPresent(renderer)
 
         # Update
@@ -219,7 +237,7 @@ function enterPauseGameLoop()
     end
 end
 
-font = TTF_OpenFont("../assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf", 26)
+fonts = Dict()
 #font = TTF_OpenFont("../assets/fonts/Bitstream-Vera-Sans-Mono/VeraMono.ttf", 23)
 function renderScore()
    txt = "Player 1: $scoreA     Player 2: $scoreB"
@@ -230,7 +248,15 @@ function renderFPS(last_10_frame_times)
     txt = "FPS: $fps"
     renderText(renderer, txt, ScreenPixelPos(winWidth*1/5, 200))
 end
-function renderText(renderer, txt, pos)
+function renderText(renderer, txt, pos
+                     ; fontName = "../assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf", fontSize=26)
+   fontKey = (fontName, fontSize)
+   if haskey(fonts, fontKey)
+       font = fonts[fontKey]
+   else
+       font = TTF_OpenFont(fontKey...)
+       fonts[fontKey] = font
+   end
    text = TTF_RenderText_Blended(font, txt, SDL_Color(20,20,20,255))
    tex = SDL_CreateTextureFromSurface(renderer,text)
 
@@ -240,10 +266,42 @@ function renderText(renderer, txt, pos)
 
    SDL_RenderCopy(renderer, tex, C_NULL, pointer_from_objref(SDL_Rect(Int(floor(pos.x-fx/2.)), Int(floor(pos.y-fy/2.)),fx,fy)))
    SDL_FreeSurface(tex)
+end
 
+clickedButton = nothing
+gEvent = nothing
+e = gEvent
+function handleMouseClickButton!(e, clickType)
+    global gEvent,clickedButton
+    gEvent = e
+    mx = Int64(parse("0b"*join(map(bits,  e[24:-1:21]))));
+    my = Int64(parse("0b"*join(map(bits,  e[28:-1:25]))));
+    #println(NTuple{56, UInt8}(e))
+    println("$mx, $my")
+    didClickButton = false
+    for b in buttons
+        topLeft = WorldPos(b.pos.x - b.w/2., b.pos.y + b.h/2.)
+        screenPos = worldToScreen(topLeft, cam)
+        if mx > screenPos.x && mx <= screenPos.x + b.w &&
+           my > screenPos.y && my <= screenPos.y + b.h
+            if (clickType == SDL_MOUSEBUTTONDOWN)
+                clickedButton = b
+                didClickButton = true
+            elseif clickedButton == b && clickType == SDL_MOUSEBUTTONUP
+                clickedButton = nothing
+                didClickButton = true
+                return b
+            end
+        end
+    end
+    if clickedButton != nothing && clickType == SDL_MOUSEBUTTONUP && didClickButton == false
+        clickedButton = nothing
+    end
+    return nothing
 end
 
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
+    paused=true
     win,renderer = makeWinRenderer()
     ball.pos = WorldPos(0,0)
     ball.vel = Vector2D(0,-ballSpeed)
