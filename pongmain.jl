@@ -7,16 +7,39 @@ include("timing.jl")
 include("objects.jl")
 include("display.jl")
 
-const winWidth, winHeight = 800, 600
+winWidth, winHeight = Int32(800), Int32(600)
 function makeWinRenderer()
-    win = SDL_CreateWindow("Hello World!", Int32(100), Int32(100), Int32(winWidth), Int32(winHeight), UInt32(SDL_WINDOW_SHOWN))
+    win = SDL_CreateWindow("Hello World!", Int32(100), Int32(100), winWidth, winHeight, UInt32(SDL_WINDOW_SHOWN))
     SDL_SetWindowResizable(win,true)
+    SDL_AddEventWatch(cfunction(resizingEventWatcher, Cint, Tuple{Ptr{Void}, Ptr{SDL_Event}}), win);
 
     renderer = SDL_CreateRenderer(win, Int32(-1), UInt32(SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC))
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND)
     #renderer = SDL_CreateRenderer(win, Int32(-1), Int32(0))
     return win,renderer
 end
+
+Base.@ccallable function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL_Event})::Cint
+    global winWidth, winHeight, cam
+    event = unsafe_load(event_ptr, 1)
+    t = getEventType(event)
+    if (t == SDL_WINDOWEVENT)
+        e = event._SDL_Event
+        winEvent = UInt8(parse("0b"*join(map(bits,  e[13:-1:13]))))
+        if (winEvent == SDL_WINDOWEVENT_RESIZED)
+            winID = UInt32(parse("0b"*join(map(bits,  e[12:-1:9]))))
+            eventWin = SDL_GetWindowFromID(winID);
+            if (eventWin == data_ptr)
+                w,h = Int32[0],Int32[0]
+                SDL_GetWindowSize(eventWin, w, h)
+                winWidth, winHeight = w[1], h[1]
+                cam.w, cam.h = w[1], h[1]
+            end
+        end
+    end
+    return 0
+end
+
 
 paddleSpeed = 1000
 ballSpeed = 250
@@ -82,9 +105,12 @@ function pollEvent!()
     success = (SDL_PollEvent(e) != 0)
     return e,success
 end
-function getEventType(e)
+function getEventType(e::Array{UInt8})
     # HAHA This is janky as hell. There has to be a better way to implement a Union...
     x = UInt32(parse("0b"*join(map(bits,  e[4:-1:1]))))
+end
+function getEventType(e::SDL_Event)
+    x = UInt32(parse("0b"*join(map(bits,  e._SDL_Event[4:-1:1]))))
 end
 
 function performUpdates!(dt)
@@ -123,6 +149,7 @@ function performUpdates!(dt)
     end
     update!(paddleA, paddleAKeys, dt)
     update!(paddleB, paddleBKeys, dt)
+
 end
 
 mutable struct KeyControls
@@ -218,7 +245,6 @@ end
 
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     win,renderer = makeWinRenderer()
-    SDL_GetWindowSize(win, pointer([winWidth]), pointer([winHeight]))
     ball.pos = WorldPos(0,0)
     ball.vel = Vector2D(0,-ballSpeed)
     runApp(win, renderer)
@@ -227,4 +253,4 @@ end
 
 #end # module
 
-# PongMain.julia_main(String[])
+#julia_main(String[])

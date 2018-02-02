@@ -86,11 +86,16 @@ end
 function update!(x::Ball, dt)
     x.pos = x.pos + (x.vel * dt)
 end
-function update!(x::Paddle, keys, dt)
+function update!(p::Paddle, keys, dt)
     if (keys.leftDown)
-        x.pos = WorldPos(x.pos.x - (paddleSpeed * dt), x.pos.y)
+        p.pos = WorldPos(p.pos.x - (paddleSpeed * dt), p.pos.y)
     end
     if (keys.rightDown)
-        x.pos = WorldPos(x.pos.x + (paddleSpeed * dt), x.pos.y)
+        p.pos = WorldPos(p.pos.x + (paddleSpeed * dt), p.pos.y)
+    end
+    if p.pos.x > winWidth/2.
+        p.pos = WorldPos(winWidth/2., p.pos.y)
+    elseif p.pos.x < -winWidth/2.
+        p.pos = WorldPos(-winWidth/2., p.pos.y)
     end
 end

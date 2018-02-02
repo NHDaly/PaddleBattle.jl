@@ -2,8 +2,9 @@ struct ScreenPixelPos  # 0,0 == top-left
     x::Int
     y::Int
 end
+ScreenPixelPos(x::Number, y::Number) = ScreenPixelPos(convert.(Int, floor.((x,y)))...)
 
-struct Camera
+mutable struct Camera
     pos::WorldPos
     w::Int
     h::Int
