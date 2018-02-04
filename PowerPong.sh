@@ -3,10 +3,17 @@
 # Haha apparently the script must be 28 bytes to execute.....
 # So this is some padding!
 
-logfile="~/.PowerPong.log"
+logfile="$HOME/NATHAN_PP.txt"
 exec > $logfile 2>&1
+
+echo "HI..."
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR/..
 
-MacOS/julia -e 'include("Resources/scripts/pongmain.jl"); julia_main([""])'
+echo "Running..."
+export JULIA_PKGDIR="$(pwd)/Resources/julia_pkgs/"
+echo "PKGDIR: $JULIA_PKGDIR"
+
+# Note --compilecache=no, needed to avoid precompilation. (Accidentally shipping precompiled )
+MacOS/julia --compilecache=no -E 'using Compat; Pkg.dir("Compat"); include("Resources/scripts/pongmain.jl"); julia_main([""])'
