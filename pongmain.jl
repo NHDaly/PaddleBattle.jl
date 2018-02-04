@@ -55,6 +55,7 @@ ball = Ball(WorldPos(0,0), Vector2D(0,-ballSpeed))
 cam = Camera(WorldPos(0,0), winWidth, winHeight)
 scoreA = 0
 scoreB = 0
+winningScore = 21
 paused_ = true # start paused to show the initial menu.
 playing_ = true
 paused = Ref(paused_)
@@ -97,6 +98,7 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
         i += 1
     end
 end
+function performUpdates!(scene, dt) end  # default
 
 
 function pollEvent!()
@@ -146,6 +148,10 @@ function render(scene::GameScene, renderer, win)
          buttons[1].text = "Continue" # After starting game
     end
 
+    if (scoreA >= winningScore)  enterWinnerGameLoop(renderer,win, "Player 1")
+    elseif (scoreB >= winningScore)  enterWinnerGameLoop(renderer,win, "Player 2")
+    end
+
     SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255)
     SDL_RenderClear(renderer)
 
@@ -191,10 +197,26 @@ function performUpdates!(scene::GameScene, dt)
     end
     update!(paddleA, paddleAKeys, dt)
     update!(paddleB, paddleBKeys, dt)
+end
 
-    #if (scoreB >= 21)  enterWinnerGameLoop()
-    #elseif (scoreA >= 21)  enterWinnerGameLoop()
-    #end
+function enterWinnerGameLoop(renderer,win, winnerName)
+    global paused
+    paused[] = true
+    sshot = getScreenshot(renderer)
+    buttons[1].text = "New Game"
+    scene = PauseScene(sshot, "$winnerName wins!!", "")
+    runSceneGameLoop(scene, renderer, win, paused)
+    SDL_FreeSurface(scene.sshot)
+
+    # --------- Reset everything
+    resetGame()
+end
+function resetGame()
+    global scoreA,scoreB
+    scoreB = scoreA = 0
+    ball.pos = WorldPos(0,0)
+    ball.vel = Vector2D(0,-ballSpeed)
+    buttons[1].text = "Continue" # After starting game
 end
 
 mutable struct KeyControls
@@ -248,15 +270,15 @@ buttons = [
      ]
 type PauseScene
     sshot::Ptr{SDL_Texture}
+    titleText::String
+    subtitleText::String
 end
 function enterPauseGameLoop(renderer,win)
     global paused
     sshot = getScreenshot(renderer)
-    scene = PauseScene(sshot)
-    println("paused: $paused[]")
+    scene = PauseScene(sshot, "$kGAME_NAME", "Main Menu")
     runSceneGameLoop(scene, renderer, win, paused)
     SDL_FreeSurface(scene.sshot)
-    println("done!")
 end
 function handleEvents!(scene::PauseScene, e,t)
     global playing,paused
@@ -269,15 +291,14 @@ function handleEvents!(scene::PauseScene, e,t)
         playing[]=false; paused[]=false;
     end
 end
-function performUpdates!(scene::PauseScene, dt) end
 
 function render(scene::PauseScene, renderer, win)
     screenRect = SDL_Rect(0,0, winWidth, winHeight)
     SDL_RenderCopy(renderer, scene.sshot, Ref(screenRect), Ref(screenRect))
     SDL_SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
     SDL_RenderFillRect(renderer, Ref(screenRect))
-    renderText(renderer, "$kGAME_NAME", ScreenPixelPos(winWidth/2, winHeight/2 - 40); fontSize=40)
-    renderText(renderer, "Main Menu", ScreenPixelPos(winWidth/2, winHeight/2); fontSize = 26)
+    renderText(renderer, scene.titleText, ScreenPixelPos(winWidth/2, winHeight/2 - 40); fontSize=40)
+    renderText(renderer, scene.subtitleText, ScreenPixelPos(winWidth/2, winHeight/2); fontSize = 26)
     for b in buttons
         render(renderer, b)
     end
