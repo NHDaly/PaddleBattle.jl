@@ -316,7 +316,7 @@ function renderFPS(renderer,last_10_frame_times)
     renderText(renderer, txt, ScreenPixelPos(winWidth*1/5, 200))
 end
 function renderText(renderer, txt, pos
-                     ; fontName = "../assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf", fontSize=26)
+                     ; fontName = "$(Pkg.dir())/SDL2/assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf", fontSize=26)
    fontKey = (fontName, fontSize)
    if haskey(fonts, fontKey)
        font = fonts[fontKey]

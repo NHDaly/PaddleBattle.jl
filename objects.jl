@@ -32,6 +32,8 @@ mutable struct Paddle
     length
 end
 
+pingSound = Mix_LoadWAV( "assets/ping.wav" );
+
 collide!(a::Ball, b::Paddle) = collide!(b,a)
 function collide!(p::Paddle, b::Ball)
     xIncr = 100
@@ -43,8 +45,9 @@ function collide!(p::Paddle, b::Ball)
     else xIncr = 0;
     end
     b.vel = Vector2D(b.vel.x * xSign + xIncr, -b.vel.y)
-end
 
+    Mix_PlayChannel( Int32(-1), pingSound, Int32(0) )
+end
 
 struct Line
      a::WorldPos
