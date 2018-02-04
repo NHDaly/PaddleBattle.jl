@@ -23,7 +23,9 @@ function render(o::Ball, cam::Camera, renderer)
 end
 function render(o::Paddle, cam::Camera, renderer)
     const paddleW = o.length; const paddleH = 15;
-    topLeft = WorldPos(o.pos.x - paddleW/2., o.pos.y + paddleH/2.)
+    # Move up/down so the edge matches the "center" of paddle.
+    edgeShift = if o.pos.y > 0; paddleH/2.; else -paddleH/2.; end
+    topLeft = WorldPos(o.pos.x - paddleW/2., o.pos.y + paddleH/2. + edgeShift)
     screenPos = worldToScreen(topLeft, cam)
     rect = SDL_Rect(screenPos.x, screenPos.y, paddleW, paddleH)
     SDL_SetRenderDrawColor(renderer, 120, 0, 0, 255)

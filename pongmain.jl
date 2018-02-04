@@ -21,7 +21,7 @@ function makeWinRenderer()
     return win,renderer
 end
 
-Base.@ccallable function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL_Event})::Cint
+function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL_Event})::Cint
     global winWidth, winHeight, cam
     event = unsafe_load(event_ptr, 1)
     t = getEventType(event)
@@ -36,6 +36,8 @@ Base.@ccallable function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Pt
                 SDL_GetWindowSize(eventWin, w, h)
                 winWidth, winHeight = w[1], h[1]
                 cam.w, cam.h = w[1], h[1]
+                # Restart timer so it doesn't have a HUGE frame.
+                start!(timer)
             end
         end
     end
@@ -51,8 +53,9 @@ ball = Ball(WorldPos(0,0), Vector2D(0,-ballSpeed))
 cam = Camera(WorldPos(0,0), winWidth, winHeight)
 scoreA = 0
 scoreB = 0
-paused = false
+paused = true # start paused to show the initial menu.
 playing = true
+debugText = false
 last_10_frame_times = [1.]
 timer = Timer()
 function runApp(win, renderer, iters = nothing)
@@ -86,7 +89,7 @@ function runApp(win, renderer, iters = nothing)
         render(paddleA, cam, renderer)
         render(paddleB, cam, renderer)
         renderScore()
-        renderFPS(last_10_frame_times)
+        if (debugText) renderFPS(last_10_frame_times) end
 
         SDL_RenderPresent(renderer)
 
@@ -99,7 +102,7 @@ function runApp(win, renderer, iters = nothing)
         performUpdates!(dt)
 
         i += 1
-        sleep(0.01)
+        #sleep(0.01)
     end
     if (playing == false)
         SDL_Quit()
@@ -115,11 +118,20 @@ function pollEvent!()
     return e,success
 end
 function getEventType(e::Array{UInt8})
-    # HAHA This is janky as hell. There has to be a better way to implement a Union...
-    x = UInt32(parse("0b"*join(map(bits,  e[4:-1:1]))))
+    # HAHA This is still pretty janky, but I guess that's all you can do w/ unions.
+    bitcat(UInt32, e[4:-1:1])
 end
 function getEventType(e::SDL_Event)
-    x = UInt32(parse("0b"*join(map(bits,  e._SDL_Event[4:-1:1]))))
+    bitcat(UInt32, e._SDL_Event[4:-1:1])
+end
+
+function bitcat(outType::Type{T}, arr)::T where T<:Number
+    out = zero(outType)
+    for x in arr
+        out = out << sizeof(x)*8
+        out |= x
+    end
+    out
 end
 
 function performUpdates!(dt)
@@ -174,7 +186,7 @@ mutable struct GameControls
 end
 const gameControls = GameControls()
 function handleKeyPress(e,t)
-    global paused
+    global paused,debugText
     keySym = UInt32(parse("0b"*join(map(bits,  e[24:-1:21]))))
     keyDown = (t == SDL_KEYDOWN)
     if (keySym == SDLK_LEFT)
@@ -190,6 +202,8 @@ function handleKeyPress(e,t)
             paused = !paused
         end
         gameControls.escapeDown = keyDown
+    elseif (keySym == SDLK_BACKQUOTE)
+        keyDown && (debugText = !debugText)
     end
 end
 
@@ -198,7 +212,7 @@ function getScreenshot(renderer)
                      winHeight, 32))..., 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
     sshot = unsafe_load(sshot_ptr, 1)
     SDL_RenderReadPixels(renderer, C_NULL, SDL_PIXELFORMAT_ARGB8888, sshot.pixels, sshot.pitch);
-    SDL_CreateTextureFromSurface(renderer, sshot_ptr)
+    return SDL_CreateTextureFromSurface(renderer, sshot_ptr)
 end
 
 buttons = [
@@ -221,7 +235,8 @@ function enterPauseGameLoop()
             elseif (t == SDL_MOUSEBUTTONUP || t == SDL_MOUSEBUTTONDOWN)
                  b = handleMouseClickButton!(e,t);
                  if (b != nothing); b.callBack(); end
-            elseif (t == SDL_QUIT);  SDL_Quit(); playing=false; return;
+            elseif (t == SDL_QUIT);
+                  playing=false; paused=false;
             end
         end
 
@@ -238,8 +253,9 @@ function enterPauseGameLoop()
         SDL_RenderPresent(renderer)
 
         # Update
-        sleep(0.01)
+        #sleep(0.01)
     end
+    SDL_FreeSurface(sshot)
 end
 
 fonts = Dict()
@@ -265,7 +281,7 @@ function renderText(renderer, txt, pos
    text = TTF_RenderText_Blended(font, txt, SDL_Color(20,20,20,255))
    tex = SDL_CreateTextureFromSurface(renderer,text)
 
-   fx,fy = Int[1], Int[1]
+   fx,fy = Cint[1], Cint[1]
    TTF_SizeText(font, txt, pointer(fx), pointer(fy))
    fx,fy = fx[1],fy[1]
 
@@ -307,6 +323,7 @@ end
 
 win,renderer = makeWinRenderer()
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
+    global paused
     paused=true
     ball.pos = WorldPos(0,0)
     ball.vel = Vector2D(0,-ballSpeed)
@@ -316,7 +333,7 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
         SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255)
         SDL_RenderClear(renderer)
         SDL_RenderPresent(renderer)
-        sleep(0.01)
+        #sleep(0.01)
     end
     runApp(win, renderer)
     return 0
