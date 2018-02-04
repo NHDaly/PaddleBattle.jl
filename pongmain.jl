@@ -21,6 +21,8 @@ function makeWinRenderer()
     return win,renderer
 end
 
+# This huge function just handles resize events. I'm not sure why it needs to be
+# a callback instead of just the regular pollEvent..
 function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL_Event})::Cint
     global winWidth, winHeight, cam
     event = unsafe_load(event_ptr, 1)
@@ -53,44 +55,28 @@ ball = Ball(WorldPos(0,0), Vector2D(0,-ballSpeed))
 cam = Camera(WorldPos(0,0), winWidth, winHeight)
 scoreA = 0
 scoreB = 0
-paused = true # start paused to show the initial menu.
-playing = true
+paused_ = true # start paused to show the initial menu.
+playing_ = true
+paused = Ref(paused_)
+playing = Ref(playing_)
 debugText = false
 last_10_frame_times = [1.]
 timer = Timer()
-function runApp(win, renderer, iters = nothing)
-    global ball,scoreA,scoreB,last_10_frame_times,paused,playing
-    SDL_PumpEvents()
+i = 1
+function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
+    global last_10_frame_times, i
     start!(timer)
-    i = 1
-    while playing && (iters == nothing || i < iters)
+    while (inSceneVar[])
         # Handle Events
         hadEvents = true
         while hadEvents
             e,hadEvents = pollEvent!()
             t = getEventType(e)
-            if (t == SDL_KEYDOWN || t == SDL_KEYUP);  handleKeyPress(e,t);
-            elseif (t == SDL_QUIT);  SDL_Quit(); playing = false;
-            end
-
-            if (paused)
-                 pause!(timer)
-                 enterPauseGameLoop()
-                 unpause!(timer)
-                 buttons[1].text = "Continue" # After starting game
-            end
+            handleEvents!(scene,e,t)
         end
 
         # Render
-        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255)
-        SDL_RenderClear(renderer)
-
-        render(ball, cam, renderer)
-        render(paddleA, cam, renderer)
-        render(paddleB, cam, renderer)
-        renderScore()
-        if (debugText) renderFPS(last_10_frame_times) end
-
+        render(scene, renderer, win)
         SDL_RenderPresent(renderer)
 
         # Update
@@ -98,17 +84,20 @@ function runApp(win, renderer, iters = nothing)
         start!(timer)
         last_10_frame_times = push!(last_10_frame_times, dt)
         if length(last_10_frame_times) > 10; shift!(last_10_frame_times) ; end
+        if (debugText) renderFPS(renderer,last_10_frame_times) end
 
-        performUpdates!(dt)
+        performUpdates!(scene, dt)
+        #sleep(0.01)
+
+        if (playing[] == false)
+            SDL_Quit()
+            quit()
+        end
 
         i += 1
-        #sleep(0.01)
-    end
-    if (playing == false)
-        SDL_Quit()
-        quit()
     end
 end
+
 
 function pollEvent!()
     #SDL_Event() = [SDL_Event(NTuple{56, Uint8}(zeros(56,1)))]
@@ -134,7 +123,39 @@ function bitcat(outType::Type{T}, arr)::T where T<:Number
     out
 end
 
-function performUpdates!(dt)
+type GameScene
+    #ball
+end
+
+function handleEvents!(scene::GameScene, e,t)
+    global playing,paused
+    # Handle Events
+    if (t == SDL_KEYDOWN || t == SDL_KEYUP);  handleKeyPress(e,t);
+    elseif (t == SDL_QUIT);  SDL_Quit(); playing[] = false;
+    end
+end
+
+
+function render(scene::GameScene, renderer, win)
+    global ball,scoreA,scoreB,last_10_frame_times,paused,playing
+
+    if (paused[])
+         pause!(timer)
+         enterPauseGameLoop(renderer,win)
+         unpause!(timer)
+         buttons[1].text = "Continue" # After starting game
+    end
+
+    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255)
+    SDL_RenderClear(renderer)
+
+    render(ball, cam, renderer)
+    render(paddleA, cam, renderer)
+    render(paddleB, cam, renderer)
+    renderScore(renderer)
+end
+
+function performUpdates!(scene::GameScene, dt)
     global ball, paddleA, paddleB, scoreB, scoreA
     #if didCollide(ball, paddleA, dt);
     #     ball.pos = ball.pos - ball.vel  # undo update
@@ -171,6 +192,9 @@ function performUpdates!(dt)
     update!(paddleA, paddleAKeys, dt)
     update!(paddleB, paddleBKeys, dt)
 
+    #if (scoreB >= 21)  enterWinnerGameLoop()
+    #elseif (scoreA >= 21)  enterWinnerGameLoop()
+    #end
 end
 
 mutable struct KeyControls
@@ -199,7 +223,7 @@ function handleKeyPress(e,t)
         paddleAKeys.rightDown = keyDown
     elseif (keySym == SDLK_ESCAPE)
         if (!gameControls.escapeDown && keyDown)
-            paused = !paused
+            paused[] = !paused[]
         end
         gameControls.escapeDown = keyDown
     elseif (keySym == SDLK_BACKQUOTE)
@@ -218,53 +242,54 @@ end
 buttons = [
          # Note that the text changes to "Continue" after first press.
          Button(WorldPos(0, -56), 200, 30, "New Game", 20,
-                  ()->(global paused; paused = false;)),
+                  ()->(global paused; paused[] = false;)),
          Button(WorldPos(0, -90), 200, 30, "Quit", 20,
-                  ()->(global paused, playing; paused = playing = false;))
+                  ()->(global paused, playing; paused[] = playing[] = false;))
      ]
-function enterPauseGameLoop()
+type PauseScene
+    sshot::Ptr{SDL_Texture}
+end
+function enterPauseGameLoop(renderer,win)
+    global paused
     sshot = getScreenshot(renderer)
-    global paused,playing
-    while (paused)
-        # Handle Events
-        hadEvents = true
-        while hadEvents
-            e,hadEvents = pollEvent!()
-            t = getEventType(e)
-            if (t == SDL_KEYDOWN || t == SDL_KEYUP);  handleKeyPress(e,t);
-            elseif (t == SDL_MOUSEBUTTONUP || t == SDL_MOUSEBUTTONDOWN)
-                 b = handleMouseClickButton!(e,t);
-                 if (b != nothing); b.callBack(); end
-            elseif (t == SDL_QUIT);
-                  playing=false; paused=false;
-            end
-        end
-
-        # Render
-        screenRect = SDL_Rect(0,0, winWidth, winHeight)
-        SDL_RenderCopy(renderer, sshot, Ref(screenRect), Ref(screenRect))
-        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
-        SDL_RenderFillRect(renderer, Ref(screenRect))
-        renderText(renderer, "$kGAME_NAME", ScreenPixelPos(winWidth/2, winHeight/2 - 40); fontSize=40)
-        renderText(renderer, "Main Menu", ScreenPixelPos(winWidth/2, winHeight/2); fontSize = 26)
-        for b in buttons
-            render(renderer, b)
-        end
-        SDL_RenderPresent(renderer)
-
-        # Update
-        #sleep(0.01)
+    scene = PauseScene(sshot)
+    println("paused: $paused[]")
+    runSceneGameLoop(scene, renderer, win, paused)
+    SDL_FreeSurface(scene.sshot)
+    println("done!")
+end
+function handleEvents!(scene::PauseScene, e,t)
+    global playing,paused
+    # Handle Events
+    if (t == SDL_KEYDOWN || t == SDL_KEYUP);  handleKeyPress(e,t);
+    elseif (t == SDL_MOUSEBUTTONUP || t == SDL_MOUSEBUTTONDOWN)
+        b = handleMouseClickButton!(e,t);
+        if (b != nothing); b.callBack(); end
+    elseif (t == SDL_QUIT);
+        playing[]=false; paused[]=false;
     end
-    SDL_FreeSurface(sshot)
+end
+function performUpdates!(scene::PauseScene, dt) end
+
+function render(scene::PauseScene, renderer, win)
+    screenRect = SDL_Rect(0,0, winWidth, winHeight)
+    SDL_RenderCopy(renderer, scene.sshot, Ref(screenRect), Ref(screenRect))
+    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
+    SDL_RenderFillRect(renderer, Ref(screenRect))
+    renderText(renderer, "$kGAME_NAME", ScreenPixelPos(winWidth/2, winHeight/2 - 40); fontSize=40)
+    renderText(renderer, "Main Menu", ScreenPixelPos(winWidth/2, winHeight/2); fontSize = 26)
+    for b in buttons
+        render(renderer, b)
+    end
 end
 
 fonts = Dict()
 #font = TTF_OpenFont("../assets/fonts/Bitstream-Vera-Sans-Mono/VeraMono.ttf", 23)
-function renderScore()
+function renderScore(renderer)
    txt = "Player 1: $scoreA     Player 2: $scoreB"
     renderText(renderer, txt, ScreenPixelPos(winWidth/2, 20))
 end
-function renderFPS(last_10_frame_times)
+function renderFPS(renderer,last_10_frame_times)
     fps = Int(floor(1./mean(last_10_frame_times)))
     txt = "FPS: $fps"
     renderText(renderer, txt, ScreenPixelPos(winWidth*1/5, 200))
@@ -319,10 +344,10 @@ function handleMouseClickButton!(e, clickType)
     return nothing
 end
 
-win,renderer = makeWinRenderer()
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
+    win,renderer = makeWinRenderer()
     global paused
-    paused=true
+    paused[]=true
     ball.pos = WorldPos(0,0)
     ball.vel = Vector2D(0,-ballSpeed)
     # Warm up
@@ -333,8 +358,10 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
         SDL_RenderPresent(renderer)
         #sleep(0.01)
     end
-    runApp(win, renderer)
+    scene = GameScene()
+    runSceneGameLoop(scene, renderer, win, playing)
     return 0
 end
 
+julia_main([""])
 #end # module
