@@ -297,8 +297,6 @@ function handleMouseClickButton!(e, clickType)
     gEvent = e
     mx = Int64(parse("0b"*join(map(bits,  e[24:-1:21]))));
     my = Int64(parse("0b"*join(map(bits,  e[28:-1:25]))));
-    #println(NTuple{56, UInt8}(e))
-    println("$mx, $my")
     didClickButton = false
     for b in buttons
         topLeft = WorldPos(b.pos.x - b.w/2., b.pos.y + b.h/2.)
