@@ -30,14 +30,13 @@ function render(o::Paddle, cam::Camera, renderer)
     SDL_RenderFillRect(renderer, Ref(rect) )
 end
 
-struct Button
+mutable struct Button
     pos::WorldPos
     w::Int
     h::Int
     text::String
     fontSize::Int
-    #pressed::Bool
-    #Button(pos,w,h,text,fontSize) = new(pos,w,h,text,fontSize,false)
+    callBack
 end
 
 function render(renderer, b::Button)

@@ -57,12 +57,13 @@ last_10_frame_times = [1.]
 timer = Timer()
 function runApp(win, renderer, iters = nothing)
     global ball,scoreA,scoreB,last_10_frame_times,paused,playing
+    SDL_PumpEvents()
     start!(timer)
     i = 1
     while playing && (iters == nothing || i < iters)
+        # Handle Events
         hadEvents = true
         while hadEvents
-            # Handle Events
             e,hadEvents = pollEvent!()
             t = getEventType(e)
             if (t == SDL_KEYDOWN || t == SDL_KEYUP);  handleKeyPress(e,t);
@@ -73,6 +74,7 @@ function runApp(win, renderer, iters = nothing)
                  pause!(timer)
                  enterPauseGameLoop()
                  unpause!(timer)
+                 buttons[1].text = "Continue" # After starting game
             end
         end
 
@@ -100,6 +102,7 @@ function runApp(win, renderer, iters = nothing)
         sleep(0.01)
     end
     if (playing == false)
+        SDL_Quit()
         quit()
     end
 end
@@ -199,23 +202,25 @@ function getScreenshot(renderer)
 end
 
 buttons = [
-         Button(WorldPos(0, -56), 200, 30, "Continue", 20),
-         Button(WorldPos(0, -90), 200, 30, "Quit", 20)
+         # Note that the text changes to "Continue" after first press.
+         Button(WorldPos(0, -56), 200, 30, "New Game", 20,
+                  ()->(global paused; paused = false;)),
+         Button(WorldPos(0, -90), 200, 30, "Quit", 20,
+                  ()->(global paused, playing; paused = playing = false;))
      ]
 function enterPauseGameLoop()
     sshot = getScreenshot(renderer)
     global paused,playing
     while (paused)
+        # Handle Events
         hadEvents = true
         while hadEvents
-            # Handle Events
             e,hadEvents = pollEvent!()
             t = getEventType(e)
             if (t == SDL_KEYDOWN || t == SDL_KEYUP);  handleKeyPress(e,t);
             elseif (t == SDL_MOUSEBUTTONUP || t == SDL_MOUSEBUTTONDOWN)
                  b = handleMouseClickButton!(e,t);
-                 if (b != nothing && b.text=="Continue") paused=false;
-                 elseif (b != nothing && b.text=="Quit") SDL_Quit(); paused=false; playing=false; return; end
+                 if (b != nothing); b.callBack(); end
             elseif (t == SDL_QUIT);  SDL_Quit(); playing=false; return;
             end
         end
@@ -300,15 +305,21 @@ function handleMouseClickButton!(e, clickType)
     return nothing
 end
 
+win,renderer = makeWinRenderer()
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     paused=true
-    win,renderer = makeWinRenderer()
     ball.pos = WorldPos(0,0)
     ball.vel = Vector2D(0,-ballSpeed)
+    # Warm up
+    for i in 1:10
+        pollEvent!()
+        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255)
+        SDL_RenderClear(renderer)
+        SDL_RenderPresent(renderer)
+        sleep(0.01)
+    end
     runApp(win, renderer)
     return 0
 end
 
 #end # module
-
-#julia_main(String[])
