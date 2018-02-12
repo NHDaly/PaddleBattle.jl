@@ -305,6 +305,7 @@ function render(scene::PauseScene, renderer, win)
     for b in buttons
         render(renderer, b)
     end
+    renderText(renderer, "Theme music copyright http://www.freesfx.co.uk", ScreenPixelPos(winWidth/2, winHeight - 10); fontSize=10)
 end
 
 fonts = Dict()
