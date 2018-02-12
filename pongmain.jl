@@ -55,12 +55,13 @@ ball = Ball(WorldPos(0,0), Vector2D(0,-ballSpeed))
 cam = Camera(WorldPos(0,0), winWidth, winHeight)
 scoreA = 0
 scoreB = 0
-winningScore = 21
+winningScore = 11
 paused_ = true # start paused to show the initial menu.
 playing_ = true
 paused = Ref(paused_)
 playing = Ref(playing_)
 debugText = false
+audioEnabled = true
 last_10_frame_times = [1.]
 timer = Timer()
 i = 1
@@ -91,7 +92,7 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
         #sleep(0.01)
 
         if (playing[] == false)
-            SDL_Quit()
+            SDL_QuitAll()
             quit()
         end
 
@@ -148,17 +149,22 @@ function render(scene::GameScene, renderer, win)
          buttons[1].text = "Continue" # After starting game
     end
 
+    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255)
+    SDL_RenderClear(renderer)
+
+    renderScore(renderer)
+    render(paddleA, cam, renderer)
+    render(paddleB, cam, renderer)
+
+    # Hack: check if it's a winner after rendering everything (except ball) so
+    # the final score shows up on winner screen.
     if (scoreA >= winningScore)  enterWinnerGameLoop(renderer,win, "Player 1")
     elseif (scoreB >= winningScore)  enterWinnerGameLoop(renderer,win, "Player 2")
     end
 
-    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255)
-    SDL_RenderClear(renderer)
-
+    # Hack: Render the ball *after* checking if it's a winner, so that way the
+    # ball doesn't show up on the winning player screen.
     render(ball, cam, renderer)
-    render(paddleA, cam, renderer)
-    render(paddleB, cam, renderer)
-    renderScore(renderer)
 end
 
 function performUpdates!(scene::GameScene, dt)
@@ -173,18 +179,6 @@ function performUpdates!(scene::GameScene, dt)
     #end
     if willCollide(ball, paddleA, dt); collide!(ball, paddleA); end
     if willCollide(ball, paddleB, dt); collide!(ball, paddleB); end
-    if ball.pos.y > winHeight/2.
-        scoreB += 1
-        ball = Ball(WorldPos(0,0), Vector2D(rand(-ballSpeed:ballSpeed), rand([ballSpeed,-ballSpeed])))
-    elseif ball.pos.y < -winHeight/2.
-        scoreA += 1
-        ball = Ball(WorldPos(0,0), Vector2D(rand(-ballSpeed:ballSpeed), rand([ballSpeed,-ballSpeed])))
-    end
-    if ball.pos.x > winWidth/2.
-        ball.vel = Vector2D(-abs(ball.vel.x), ball.vel.y)
-    elseif ball.pos.x < -winWidth/2.
-        ball.vel = Vector2D(abs(ball.vel.x), ball.vel.y)
-    end
     if (willCollide(ball, paddleA,dt) || willCollide(ball, paddleB,dt))
         # STUCK GOING TOO FAST
         slowed_dt = dt
@@ -265,9 +259,18 @@ buttons = [
          # Note that the text changes to "Continue" after first press.
          Button(WorldPos(0, -56), 200, 30, "New Game", 20,
                   ()->(global paused; paused[] = false;)),
-         Button(WorldPos(0, -90), 200, 30, "Quit", 20,
+         Button(WorldPos(0, -90), 200, 30, "Sound on/off", 20,
+                  ()->(toggleAudio())),
+         Button(WorldPos(0, -124), 200, 30, "Quit", 20,
                   ()->(global paused, playing; paused[] = playing[] = false;))
      ]
+function toggleAudio()
+    global audioEnabled;
+    audioEnabled = !audioEnabled;
+    if (audioEnabled) Mix_ResumeMusic()
+    else  Mix_PauseMusic()
+    end
+end
 type PauseScene
     sshot::Ptr{SDL_Texture}
     titleText::String
@@ -345,10 +348,7 @@ function handleMouseClickButton!(e, clickType)
     my = Int64(parse("0b"*join(map(bits,  e[28:-1:25]))));
     didClickButton = false
     for b in buttons
-        topLeft = WorldPos(b.pos.x - b.w/2., b.pos.y + b.h/2.)
-        screenPos = worldToScreen(topLeft, cam)
-        if mx > screenPos.x && mx <= screenPos.x + b.w &&
-           my > screenPos.y && my <= screenPos.y + b.h
+        if mouseOnButton(mx,my,b,cam)
             if (clickType == SDL_MOUSEBUTTONDOWN)
                 clickedButton = b
                 didClickButton = true
@@ -365,6 +365,17 @@ function handleMouseClickButton!(e, clickType)
     return nothing
 end
 
+function mouseOnButton(mx, my, b::Button, cam)
+    topLeft = WorldPos(b.pos.x - b.w/2., b.pos.y + b.h/2.)
+    screenPos = worldToScreen(topLeft, cam)
+    if mx > screenPos.x && mx <= screenPos.x + b.w &&
+        my > screenPos.y && my <= screenPos.y + b.h
+        return true
+    end
+    return false
+end
+
+music = Mix_LoadMUS( "assets/music.wav" );
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     win,renderer = makeWinRenderer()
     global paused
@@ -379,6 +390,7 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
         SDL_RenderPresent(renderer)
         #sleep(0.01)
     end
+    audioEnabled && Mix_PlayMusic( music, Int32(-1) )
     scene = GameScene()
     runSceneGameLoop(scene, renderer, win, playing)
     return 0

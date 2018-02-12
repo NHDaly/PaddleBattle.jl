@@ -46,9 +46,15 @@ function render(renderer, b::Button)
     screenPos = worldToScreen(topLeft, cam)
     rect = SDL_Rect(screenPos.x, screenPos.y, b.w, b.h)
     if clickedButton == b
-        SDL_SetRenderDrawColor(renderer, 130, 30, 30, 255)
+        x,y = Int[0], Int[0]
+        SDL_GetMouseState(pointer(x), pointer(y))
+        if mouseOnButton(x[],y[],b,cam)
+            SDL_SetRenderDrawColor(renderer, 30, 30, 130, 255)
+        else
+            SDL_SetRenderDrawColor(renderer, 70, 30, 170, 255)
+        end
     else
-        SDL_SetRenderDrawColor(renderer, 180, 80, 80, 255)
+        SDL_SetRenderDrawColor(renderer, 80, 80, 180, 255)
     end
     SDL_RenderFillRect(renderer, Ref(rect) )
     renderText(renderer, b.text, worldToScreen(b.pos, cam); fontSize = b.fontSize)

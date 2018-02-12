@@ -33,6 +33,7 @@ mutable struct Paddle
 end
 
 pingSound = Mix_LoadWAV( "assets/ping.wav" );
+scoreSound = Mix_LoadWAV( "assets/score.wav" );
 
 collide!(a::Ball, b::Paddle) = collide!(b,a)
 function collide!(p::Paddle, b::Ball)
@@ -46,7 +47,7 @@ function collide!(p::Paddle, b::Ball)
     end
     b.vel = Vector2D(b.vel.x * xSign + xIncr, -b.vel.y)
 
-    Mix_PlayChannel( Int32(-1), pingSound, Int32(0) )
+    audioEnabled && Mix_PlayChannel( Int32(-1), pingSound, Int32(0) )
 end
 
 struct Line
@@ -86,8 +87,27 @@ function isColliding(p::Paddle, l::Line, width)
     return abs(lc0.x - p.pos.x) <= (p.length/2.0 + width/2.)
 end
 
-function update!(x::Ball, dt)
-    x.pos = x.pos + (x.vel * dt)
+
+function update!(b::Ball, dt)
+    global scoreA, scoreB
+    b.pos = b.pos + (b.vel * dt)
+
+    if b.pos.y > winHeight/2.
+        scoreB += 1
+        audioEnabled && Mix_PlayChannel( Int32(-1), scoreSound, Int32(0) )
+        b.pos = WorldPos(0,0)
+        b.vel = Vector2D(rand(-ballSpeed:ballSpeed), rand([ballSpeed,-ballSpeed]))
+    elseif b.pos.y < -winHeight/2.
+        scoreA += 1
+        audioEnabled && Mix_PlayChannel( Int32(-1), scoreSound, Int32(0) )
+        b.pos = WorldPos(0,0)
+        b.vel = Vector2D(rand(-ballSpeed:ballSpeed), rand([ballSpeed,-ballSpeed]))
+    end
+    if b.pos.x > winWidth/2.
+        b.vel = Vector2D(-abs(b.vel.x), b.vel.y)
+    elseif b.pos.x < -winWidth/2.
+        b.vel = Vector2D(abs(b.vel.x), b.vel.y)
+    end
 end
 function update!(p::Paddle, keys, dt)
     if (keys.leftDown)
