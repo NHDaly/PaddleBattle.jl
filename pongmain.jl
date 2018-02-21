@@ -379,7 +379,11 @@ function mouseOnButton(mx, my, b::Button, cam)
     return false
 end
 
-function change_dir_if_bundle(full_binary_name)
+function change_dir_if_bundle()
+    # julia_cmd() shows how this julia process was invoked.
+    cmd_strings = Base.shell_split(string(Base.julia_cmd()))
+    # The first string is the full path to this executable.
+    full_binary_name = cmd_strings[1][2:end] # (remove leading backtick)
     if is_apple()
         # On Apple devices, if this is running inside a .app bundle, it starts
         # us with pwd="$HOME". Change dir to the Resources dir instead.
@@ -398,11 +402,8 @@ function load_audio_files()
     scoreSound = Mix_LoadWAV( "$assets/score.wav" );
 end
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
-    println("julia_main")
-    println("args: $ARGS")
-    println("pwd: $(pwd())")
     SDL_JL_Init()
-    if (length(ARGS) > 0) change_dir_if_bundle(ARGS[1]) end
+    change_dir_if_bundle()
     load_audio_files()
     music = Mix_LoadMUS( "$assets/music.wav" );
     win,renderer = makeWinRenderer()
@@ -423,7 +424,6 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     runSceneGameLoop(scene, renderer, win, playing)
     return 0
 end
-#julia_main(["$(pwd())/pongmain"])
 
 # julia_main([""])
 #end # module
