@@ -6,6 +6,20 @@ include("/Users/daly/.julia/v0.6/SDL2/src/SDL2.jl")
 
 const assets = "assets"
 
+println( "ENV[assets_dir]:" * get(ENV, "COMPILING_APPLE_BUNDLE", "") )
+println( "ENV[LD_LIBRARY_PATH]:" * get(ENV, "LD_LIBRARY_PATH", "") )
+println( "DL_LOAD_PATH: $(Base.DL_LOAD_PATH)" )
+
+# Override SDL libs locations if this script is being compiled for mac .app builds
+if get(ENV, "COMPILING_APPLE_BUNDLE", "false") == "true"
+    #  (note that you can still change these values b/c no functions have
+    #  actually been called yet, and so the original constants haven't been
+    #  "compiled in".)
+    const libSDL = "libSDL2.dylib"
+    const SDL_ttf = "libSDL2_ttf.dylib"
+    const SDL_mixer = "libSDL2_mixer.dylib"
+end
+
 include("timing.jl")
 include("objects.jl")
 include("display.jl")
@@ -323,7 +337,7 @@ function renderFPS(renderer,last_10_frame_times)
     renderText(renderer, txt, ScreenPixelPos(winWidth*1/5, 200))
 end
 function renderText(renderer, txt, pos
-                     ; fontName = "$(Pkg.dir())/SDL2/assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf", fontSize=26)
+                     ; fontName = "$assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf", fontSize=26)
    fontKey = (fontName, fontSize)
    if haskey(fonts, fontKey)
        font = fonts[fontKey]
@@ -425,5 +439,5 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     return 0
 end
 
-# julia_main([""])
+#julia_main([""])
 #end # module
