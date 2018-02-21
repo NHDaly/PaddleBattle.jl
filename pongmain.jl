@@ -6,10 +6,6 @@ include("/Users/daly/.julia/v0.6/SDL2/src/SDL2.jl")
 
 const assets = "assets"
 
-println( "ENV[assets_dir]:" * get(ENV, "COMPILING_APPLE_BUNDLE", "") )
-println( "ENV[LD_LIBRARY_PATH]:" * get(ENV, "LD_LIBRARY_PATH", "") )
-println( "DL_LOAD_PATH: $(Base.DL_LOAD_PATH)" )
-
 # Override SDL libs locations if this script is being compiled for mac .app builds
 if get(ENV, "COMPILING_APPLE_BUNDLE", "false") == "true"
     #  (note that you can still change these values b/c no functions have
