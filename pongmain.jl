@@ -23,10 +23,18 @@ include("display.jl")
 const kGAME_NAME = "Power Pong!"
 
 winWidth, winHeight = Int32(800), Int32(600)
+winWidth_highDPI, winHeight_highDPI = Int32(800), Int32(600)
 function makeWinRenderer()
-    win = SDL_CreateWindow("Hello World!", Int32(100), Int32(100), winWidth, winHeight, UInt32(SDL_WINDOW_SHOWN))
-    SDL_SetWindowResizable(win,true)
+    global winWidth, winHeight, winWidth_highDPI, winHeight_highDPI
+    #win = SDL_CreateWindow("Hello World!", Int32(100), Int32(100), winWidth, winHeight, UInt32(SDL_WINDOW_SHOWN))
+
+    win = SDL_CreateWindow(kGAME_NAME,
+        Int32(SDL_WINDOWPOS_CENTERED), Int32(SDL_WINDOWPOS_CENTERED), winWidth, winHeight,
+        SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE|SDL_WINDOW_ALLOW_HIGHDPI|SDL_WINDOW_SHOWN);
     SDL_AddEventWatch(cfunction(resizingEventWatcher, Cint, Tuple{Ptr{Void}, Ptr{SDL_Event}}), win);
+
+    # Find out how big the created window actually was (depends on the system):
+    winWidth, winHeight, winWidth_highDPI, winHeight_highDPI = getWindowSize(win)
 
     renderer = SDL_CreateRenderer(win, Int32(-1), UInt32(SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC))
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND)
@@ -47,18 +55,24 @@ function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL_Event})::C
             winID = UInt32(parse("0b"*join(map(bits,  e[12:-1:9]))))
             eventWin = SDL_GetWindowFromID(winID);
             if (eventWin == data_ptr)
-                w,h = Int32[0],Int32[0]
-                SDL_GetWindowSize(eventWin, w, h)
-                winWidth, winHeight = w[1], h[1]
-                cam.w, cam.h = w[1], h[1]
+                w,h,w_highDPI,h_highDPI = getWindowSize(win)
+                winWidth, winHeight = w, h
+                winWidth_highDPI, winHeight_highDPI = w_highDPI, h_highDPI
+                cam.w, cam.h = w, h
                 # Restart timer so it doesn't have a HUGE frame.
                 start!(timer)
             end
         end
     end
     return 0
-end
+end#
 
+function getWindowSize(win)
+    w,h,w_highDPI,h_highDPI = Int32[0],Int32[0],Int32[0],Int32[0]
+    SDL_GetWindowSize(win, w, h)
+    SDL_GL_GetDrawableSize(win, w_highDPI, h_highDPI)
+    return w[],h[],w_highDPI[],h_highDPI[]
+end
 
 paddleSpeed = 1000
 ballSpeed = 250
@@ -70,8 +84,10 @@ scoreA = 0
 scoreB = 0
 winningScore = 11
 paused_ = true # start paused to show the initial menu.
-playing_ = true
 paused = Ref(paused_)
+game_started_ = true # start paused to show the initial menu.
+game_started = Ref(game_started_)
+playing_ = true
 playing = Ref(playing_)
 debugText = false
 audioEnabled = true
@@ -252,7 +268,9 @@ function handleKeyPress(e,t)
         paddleAKeys.rightDown = keyDown
     elseif (keySym == SDLK_ESCAPE)
         if (!gameControls.escapeDown && keyDown)
-            paused[] = !paused[]
+            if game_started[]  # Escape shouldn't start the game.
+                paused[] = !paused[]
+            end
         end
         gameControls.escapeDown = keyDown
     elseif (keySym == SDLK_BACKQUOTE)
@@ -261,8 +279,9 @@ function handleKeyPress(e,t)
 end
 
 function getScreenshot(renderer)
-    sshot_ptr = SDL_CreateRGBSurface(UInt32(0), convert.(Int32, (winWidth,
-                     winHeight, 32))..., 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+    sshot_ptr = SDL_CreateRGBSurface(UInt32(0), convert.(Int32,
+                                 (winWidth_highDPI, winHeight_highDPI, 32))...,
+                      0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
     sshot = unsafe_load(sshot_ptr, 1)
     SDL_RenderReadPixels(renderer, C_NULL, SDL_PIXELFORMAT_ARGB8888, sshot.pixels, sshot.pitch);
     return SDL_CreateTextureFromSurface(renderer, sshot_ptr)
@@ -271,7 +290,7 @@ end
 buttons = [
          # Note that the text changes to "Continue" after first press.
          Button(WorldPos(0, -56), 200, 30, "New Game", 20,
-                  ()->(global paused; paused[] = false;)),
+                  ()->(global paused,game_started; paused[] = false; game_started[] = true;)),
          Button(WorldPos(0, -90), 200, 30, "Sound on/off", 20,
                   ()->(toggleAudio())),
          Button(WorldPos(0, -124), 200, 30, "Quit", 20,
@@ -417,8 +436,9 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     load_audio_files()
     music = Mix_LoadMUS( "$assets/music.wav" );
     win,renderer = makeWinRenderer()
-    global paused
+    global paused,game_started
     paused[]=true
+    game_started[]=false
     ball.pos = WorldPos(0,0)
     ball.vel = Vector2D(0,-ballSpeed)
     # Warm up
@@ -437,3 +457,42 @@ end
 
 #julia_main([""])
 #end # module
+
+#win = SDL_CreateWindow("test",
+#    Int32(SDL_WINDOWPOS_CENTERED), Int32(SDL_WINDOWPOS_CENTERED), Int32(600), Int32(480),
+#    SDL_WINDOW_RESIZABLE|SDL_WINDOW_OPENGL|SDL_WINDOW_ALLOW_HIGHDPI);
+#
+#win
+#pollEvent!()
+#SDL_Delay(UInt32(3000));  # Pause execution for 3000 milliseconds, for example
+#
+#renderer = SDL_CreateRenderer(win, Int32(-1), UInt32(SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC))
+#SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND)
+#
+#SDL_RenderPresent(renderer)
+#    renderText(renderer, "Theme music copyright http://www.freesfx.co.uk", ScreenPixelPos(winWidth/2, winHeight - 10);)
+
+
+displayIndex =
+function MySDL_GetDisplayDPI(displayIndex)
+    const kSysDefaultDpi =
+        if is_apple()
+            Cfloat(72.0)
+        elseif is_windows()
+            Cfloat(96.0)
+        else
+            error("No system default DPI set for this platform.");
+        end
+
+    dpi = Cfloat[0.0]
+    hdpi = Cfloat[0.0]
+    vdpi = Cfloat[0.0]
+    succ = SDL_GetDisplayDPI(Int32(0), dpi, hdpi, vdpi)
+    if (succ != 0)
+        # Failed to get DPI, so just return the default value.
+        dpi[] = kSysDefaultDpi;
+    end
+    dpi[]
+    hdpi[]
+    vdpi[]
+}
