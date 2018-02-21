@@ -1,5 +1,16 @@
 APPNAME="PowerPong"
 
+
+# NOTES:
+# TODO: change this script to use juliac.jl to compile the app instead of
+# copying the entire Julia.app!!
+# TODO: Make a new Package for the SDL binaries so you don't have to dowload
+# them and also don't bloat SDL2.jl
+# TODO: Send a PR to rename SDL.jl package to SDL2.jl
+# TODO: Find out why juilac.jl's program.c is skipping argv[0]... change it if
+# possible, otherwise create my own program.c for this.
+
+
 # ----------- Initialize App ---------------------
 mkpath("builddir")
 # Keep everything absolute directories.

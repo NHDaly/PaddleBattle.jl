@@ -32,8 +32,8 @@ mutable struct Paddle
     length
 end
 
-pingSound = Mix_LoadWAV( "assets/ping.wav" );
-scoreSound = Mix_LoadWAV( "assets/score.wav" );
+pingSound = nothing
+scoreSound = nothing
 
 collide!(a::Ball, b::Paddle) = collide!(b,a)
 function collide!(p::Paddle, b::Ball)

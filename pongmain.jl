@@ -1,7 +1,10 @@
 #module PongMain
+println("Start")
 
 #using SDL2
 include("/Users/daly/.julia/v0.6/SDL2/src/SDL2.jl")
+
+const assets = "assets"
 
 include("timing.jl")
 include("objects.jl")
@@ -376,8 +379,32 @@ function mouseOnButton(mx, my, b::Button, cam)
     return false
 end
 
-music = Mix_LoadMUS( "assets/music.wav" );
+function change_dir_if_bundle(full_binary_name)
+    if is_apple()
+        # On Apple devices, if this is running inside a .app bundle, it starts
+        # us with pwd="$HOME". Change dir to the Resources dir instead.
+        # Can tell if we're in a bundle by what the full_binary_name ends in.
+        m = match(r".app/Contents/MacOS/[^/]+$", full_binary_name)
+        if m != nothing
+            resources_dir = full_binary_name[1:findlast("/MacOS", full_binary_name)[1]-1]*"/Resources"
+            cd(resources_dir)
+        end
+    end
+    println("new pwd: $(pwd())")
+end
+function load_audio_files()
+    global pingSound, scoreSound
+    pingSound = Mix_LoadWAV( "$assets/ping.wav" );
+    scoreSound = Mix_LoadWAV( "$assets/score.wav" );
+end
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
+    println("julia_main")
+    println("args: $ARGS")
+    println("pwd: $(pwd())")
+    SDL_JL_Init()
+    if (length(ARGS) > 0) change_dir_if_bundle(ARGS[1]) end
+    load_audio_files()
+    music = Mix_LoadMUS( "$assets/music.wav" );
     win,renderer = makeWinRenderer()
     global paused
     paused[]=true
@@ -396,6 +423,7 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     runSceneGameLoop(scene, renderer, win, playing)
     return 0
 end
+#julia_main(["$(pwd())/pongmain"])
 
-julia_main([""])
+# julia_main([""])
 #end # module
