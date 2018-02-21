@@ -30,11 +30,12 @@ function makeWinRenderer()
 
     win = SDL_CreateWindow(kGAME_NAME,
         Int32(SDL_WINDOWPOS_CENTERED), Int32(SDL_WINDOWPOS_CENTERED), winWidth, winHeight,
-        SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE|SDL_WINDOW_ALLOW_HIGHDPI|SDL_WINDOW_SHOWN);
+        SDL_WINDOW_ALLOW_HIGHDPI|SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE|SDL_WINDOW_SHOWN);
     SDL_AddEventWatch(cfunction(resizingEventWatcher, Cint, Tuple{Ptr{Void}, Ptr{SDL_Event}}), win);
 
     # Find out how big the created window actually was (depends on the system):
     winWidth, winHeight, winWidth_highDPI, winHeight_highDPI = getWindowSize(win)
+    #cam.w, cam.h = winWidth_highDPI, winHeight_highDPI
 
     renderer = SDL_CreateRenderer(win, Int32(-1), UInt32(SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC))
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND)
@@ -55,10 +56,11 @@ function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL_Event})::C
             winID = UInt32(parse("0b"*join(map(bits,  e[12:-1:9]))))
             eventWin = SDL_GetWindowFromID(winID);
             if (eventWin == data_ptr)
-                w,h,w_highDPI,h_highDPI = getWindowSize(win)
+                w,h,w_highDPI,h_highDPI = getWindowSize(eventWin)
                 winWidth, winHeight = w, h
                 winWidth_highDPI, winHeight_highDPI = w_highDPI, h_highDPI
-                cam.w, cam.h = w, h
+                cam.w, cam.h = winWidth_highDPI, winHeight_highDPI
+                recenterButtons!()
                 # Restart timer so it doesn't have a HUGE frame.
                 start!(timer)
             end
@@ -79,7 +81,7 @@ ballSpeed = 250
 paddleA = Paddle(WorldPos(0,200),200)
 paddleB = Paddle(WorldPos(0,-200),200)
 ball = Ball(WorldPos(0,0), Vector2D(0,-ballSpeed))
-cam = Camera(WorldPos(0,0), winWidth, winHeight)
+cam = nothing
 scoreA = 0
 scoreB = 0
 winningScore = 11
@@ -268,9 +270,9 @@ function handleKeyPress(e,t)
         paddleAKeys.rightDown = keyDown
     elseif (keySym == SDLK_ESCAPE)
         if (!gameControls.escapeDown && keyDown)
-            if game_started[]  # Escape shouldn't start the game.
+            #if game_started[]  # Escape shouldn't start the game.
                 paused[] = !paused[]
-            end
+            #end
         end
         gameControls.escapeDown = keyDown
     elseif (keySym == SDLK_BACKQUOTE)
@@ -280,7 +282,7 @@ end
 
 function getScreenshot(renderer)
     sshot_ptr = SDL_CreateRGBSurface(UInt32(0), convert.(Int32,
-                                 (winWidth_highDPI, winHeight_highDPI, 32))...,
+                                 (cam.w, cam.h, 32))...,
                       0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
     sshot = unsafe_load(sshot_ptr, 1)
     SDL_RenderReadPixels(renderer, C_NULL, SDL_PIXELFORMAT_ARGB8888, sshot.pixels, sshot.pitch);
@@ -289,13 +291,19 @@ end
 
 buttons = [
          # Note that the text changes to "Continue" after first press.
-         Button(WorldPos(0, -56), 200, 30, "New Game", 20,
+         Button(UIPixelPos(0,0), 200, 30, "New Game", 20,
                   ()->(global paused,game_started; paused[] = false; game_started[] = true;)),
-         Button(WorldPos(0, -90), 200, 30, "Sound on/off", 20,
+         Button(UIPixelPos(0,0), 200, 30, "Sound on/off", 20,
                   ()->(toggleAudio())),
-         Button(WorldPos(0, -124), 200, 30, "Quit", 20,
+         Button(UIPixelPos(0,0), 200, 30, "Quit", 20,
                   ()->(global paused, playing; paused[] = playing[] = false;))
      ]
+function recenterButtons!()
+    global buttons
+    buttons[1].pos = screenOffsetFromCenter(0,56)
+    buttons[2].pos = screenOffsetFromCenter(0,90)
+    buttons[3].pos = screenOffsetFromCenter(0,124)
+end
 function toggleAudio()
     global audioEnabled;
     audioEnabled = !audioEnabled;
@@ -328,31 +336,33 @@ function handleEvents!(scene::PauseScene, e,t)
 end
 
 function render(scene::PauseScene, renderer, win)
-    screenRect = SDL_Rect(0,0, winWidth, winHeight)
+    screenRect = SDL_Rect(0,0, cam.w, cam.h)
     SDL_RenderCopy(renderer, scene.sshot, Ref(screenRect), Ref(screenRect))
     SDL_SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
     SDL_RenderFillRect(renderer, Ref(screenRect))
-    renderText(renderer, scene.titleText, ScreenPixelPos(winWidth/2, winHeight/2 - 40); fontSize=40)
-    renderText(renderer, scene.subtitleText, ScreenPixelPos(winWidth/2, winHeight/2); fontSize = 26)
+    renderText(renderer, cam, scene.titleText, screenOffsetFromCenter(0,-40); fontSize=40)
+    renderText(renderer, cam, scene.subtitleText, screenOffsetFromCenter(0,0); fontSize = 26)
     for b in buttons
-        render(renderer, b)
+        render(b, cam, renderer)
     end
-    renderText(renderer, "Theme music copyright http://www.freesfx.co.uk", ScreenPixelPos(winWidth/2, winHeight - 10); fontSize=10)
+    renderText(renderer, cam, "Theme music copyright http://www.freesfx.co.uk", UIPixelPos(screenCenterX(), winHeight - 10); fontSize=10)
 end
 
 fonts = Dict()
 #font = TTF_OpenFont("../assets/fonts/Bitstream-Vera-Sans-Mono/VeraMono.ttf", 23)
 function renderScore(renderer)
    txt = "Player 1: $scoreA     Player 2: $scoreB"
-    renderText(renderer, txt, ScreenPixelPos(winWidth/2, 20))
+    renderText(renderer, cam, txt, UIPixelPos(screenCenterX(), 20))
 end
 function renderFPS(renderer,last_10_frame_times)
     fps = Int(floor(1./mean(last_10_frame_times)))
     txt = "FPS: $fps"
-    renderText(renderer, txt, ScreenPixelPos(winWidth*1/5, 200))
+    renderText(renderer, cam, txt, UIPixelPos(winWidth*1/5, 200))
 end
-function renderText(renderer, txt, pos
+function renderText(renderer, cam::Camera, txt, pos::UIPixelPos
                      ; fontName = "$assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf", fontSize=26)
+   scale = worldScale(cam)
+   fontSize = scale*fontSize
    fontKey = (fontName, fontSize)
    if haskey(fonts, fontKey)
        font = fonts[fontKey]
@@ -367,7 +377,8 @@ function renderText(renderer, txt, pos
    TTF_SizeText(font, txt, pointer(fx), pointer(fy))
    fx,fy = fx[1],fy[1]
 
-   SDL_RenderCopy(renderer, tex, C_NULL, pointer_from_objref(SDL_Rect(Int(floor(pos.x-fx/2.)), Int(floor(pos.y-fy/2.)),fx,fy)))
+   screenPos = uiToScreen(pos, cam)
+   SDL_RenderCopy(renderer, tex, C_NULL, pointer_from_objref(SDL_Rect(Int(floor(screenPos.x-fx/2.)), Int(floor(screenPos.y-fy/2.)),fx,fy)))
    SDL_FreeSurface(tex)
 end
 
@@ -381,7 +392,7 @@ function handleMouseClickButton!(e, clickType)
     my = Int64(parse("0b"*join(map(bits,  e[28:-1:25]))));
     didClickButton = false
     for b in buttons
-        if mouseOnButton(mx,my,b,cam)
+        if mouseOnButton(UIPixelPos(mx,my),b,cam)
             if (clickType == SDL_MOUSEBUTTONDOWN)
                 clickedButton = b
                 didClickButton = true
@@ -398,11 +409,13 @@ function handleMouseClickButton!(e, clickType)
     return nothing
 end
 
-function mouseOnButton(mx, my, b::Button, cam)
-    topLeft = WorldPos(b.pos.x - b.w/2., b.pos.y + b.h/2.)
-    screenPos = worldToScreen(topLeft, cam)
-    if mx > screenPos.x && mx <= screenPos.x + b.w &&
-        my > screenPos.y && my <= screenPos.y + b.h
+function mouseOnButton(m::UIPixelPos, b::Button, cam)
+    println("m: $m")
+    println("b: $(b.pos)")
+    topLeft = UIPixelPos(b.pos.x - b.w/2., b.pos.y - b.h/2.)
+    println("s: $(topLeft)")
+    if m.x > topLeft.x && m.x <= topLeft.x + b.w &&
+        m.y > topLeft.y && m.y <= topLeft.y + b.h
         return true
     end
     return false
@@ -430,13 +443,39 @@ function load_audio_files()
     pingSound = Mix_LoadWAV( "$assets/ping.wav" );
     scoreSound = Mix_LoadWAV( "$assets/score.wav" );
 end
+#displayIndex = 0
+#function MySDL_GetDisplayDPI(displayIndex)
+#    const kSysDefaultDpi =
+#        if is_apple()
+#            Cfloat(72.0)
+#        elseif is_windows()
+#            Cfloat(96.0)
+#        else
+#            error("No system default DPI set for this platform.");
+#        end
+#
+#    dpi = Cfloat[0.0]
+#    hdpi = Cfloat[0.0]
+#    vdpi = Cfloat[0.0]
+#    succ = SDL_GetDisplayDPI(Int32(0), dpi, hdpi, vdpi)
+#    if (succ != 0)
+#        # Failed to get DPI, so just return the default value.
+#        dpi[] = kSysDefaultDpi;
+#    end
+#    dpi[]
+#    hdpi[]
+#    vdpi[]
+#end
+
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
+    global paused,game_started, cam
     SDL_JL_Init()
     change_dir_if_bundle()
     load_audio_files()
     music = Mix_LoadMUS( "$assets/music.wav" );
     win,renderer = makeWinRenderer()
-    global paused,game_started
+    cam = Camera(WorldPos(0,0), winWidth_highDPI, winHeight_highDPI)
+    recenterButtons!()
     paused[]=true
     game_started[]=false
     ball.pos = WorldPos(0,0)
@@ -455,44 +494,7 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     return 0
 end
 
-#julia_main([""])
+# julia_main([""])
+
+""
 #end # module
-
-#win = SDL_CreateWindow("test",
-#    Int32(SDL_WINDOWPOS_CENTERED), Int32(SDL_WINDOWPOS_CENTERED), Int32(600), Int32(480),
-#    SDL_WINDOW_RESIZABLE|SDL_WINDOW_OPENGL|SDL_WINDOW_ALLOW_HIGHDPI);
-#
-#win
-#pollEvent!()
-#SDL_Delay(UInt32(3000));  # Pause execution for 3000 milliseconds, for example
-#
-#renderer = SDL_CreateRenderer(win, Int32(-1), UInt32(SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC))
-#SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND)
-#
-#SDL_RenderPresent(renderer)
-#    renderText(renderer, "Theme music copyright http://www.freesfx.co.uk", ScreenPixelPos(winWidth/2, winHeight - 10);)
-
-
-displayIndex =
-function MySDL_GetDisplayDPI(displayIndex)
-    const kSysDefaultDpi =
-        if is_apple()
-            Cfloat(72.0)
-        elseif is_windows()
-            Cfloat(96.0)
-        else
-            error("No system default DPI set for this platform.");
-        end
-
-    dpi = Cfloat[0.0]
-    hdpi = Cfloat[0.0]
-    vdpi = Cfloat[0.0]
-    succ = SDL_GetDisplayDPI(Int32(0), dpi, hdpi, vdpi)
-    if (succ != 0)
-        # Failed to get DPI, so just return the default value.
-        dpi[] = kSysDefaultDpi;
-    end
-    dpi[]
-    hdpi[]
-    vdpi[]
-}
