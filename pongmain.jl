@@ -97,8 +97,11 @@ audioEnabled = true
 last_10_frame_times = [1.]
 timer = Timer()
 i = 1
+
+sceneStack = []  # Used to keep track of the current scene
 function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
     global last_10_frame_times, i
+    push!(sceneStack, scene)
     start!(timer)
     while (inSceneVar[])
         # Handle Events
@@ -130,6 +133,7 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
 
         i += 1
     end
+    pop!(sceneStack)
 end
 function performUpdates!(scene, dt) end  # default
 
@@ -168,11 +172,6 @@ function handleEvents!(scene::GameScene, e,t)
     if (t == SDL_KEYDOWN || t == SDL_KEYUP);  handleKeyPress(e,t);
     elseif (t == SDL_QUIT);  SDL_Quit(); playing[] = false;
     end
-end
-
-
-function render(scene::GameScene, renderer, win)
-    global ball,scoreA,scoreB,last_10_frame_times,paused,playing
 
     if (paused[])
          pause!(timer)
@@ -180,6 +179,11 @@ function render(scene::GameScene, renderer, win)
          unpause!(timer)
          buttons[1].text = "Continue" # After starting game
     end
+end
+
+
+function render(scene::GameScene, renderer, win)
+    global ball,scoreA,scoreB,last_10_frame_times,paused,playing
 
     SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255)
     SDL_RenderClear(renderer)
@@ -228,11 +232,9 @@ end
 function enterWinnerGameLoop(renderer,win, winnerName)
     global paused
     paused[] = true
-    sshot = getScreenshot(renderer)
     buttons[1].text = "New Game"
-    scene = PauseScene(sshot, "$winnerName wins!!", "")
+    scene = PauseScene("$winnerName wins!!", "")
     runSceneGameLoop(scene, renderer, win, paused)
-    SDL_FreeSurface(scene.sshot)
 
     # --------- Reset everything
     resetGame()
@@ -283,15 +285,6 @@ function handleKeyPress(e,t)
     end
 end
 
-function getScreenshot(renderer)
-    sshot_ptr = SDL_CreateRGBSurface(UInt32(0), convert.(Int32,
-                                 (cam.w, cam.h, 32))...,
-                      0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-    sshot = unsafe_load(sshot_ptr, 1)
-    SDL_RenderReadPixels(renderer, C_NULL, SDL_PIXELFORMAT_ARGB8888, sshot.pixels, sshot.pitch);
-    return SDL_CreateTextureFromSurface(renderer, sshot_ptr)
-end
-
 buttons = [
          # Note that the text changes to "Continue" after first press.
          Button(UIPixelPos(0,0), 200, 30, "New Game", 20,
@@ -311,17 +304,17 @@ buttons = [
          Button(UIPixelPos(0,0), 150, 30, keyDisplayNames[keySettings[:paddleBRight]], 20,
                   ()->(tryChangingKeySettingButton(buttons[7], :paddleBRight)))
      ]
-paddleAControlsX = screenCenterX()-260
-paddleBControlsX = screenCenterX()+260
+paddleAControlsX() = screenCenterX()-260
+paddleBControlsX() = screenCenterX()+260
 function recenterButtons!()
     global buttons
     buttons[1].pos = screenOffsetFromCenter(0,56)
     buttons[2].pos = screenOffsetFromCenter(0,90)
     buttons[3].pos = screenOffsetFromCenter(0,124)
-    buttons[4].pos = UIPixelPos(paddleAControlsX, winHeight-90)
-    buttons[5].pos = UIPixelPos(paddleAControlsX, winHeight-50)
-    buttons[6].pos = UIPixelPos(paddleBControlsX, winHeight-90)
-    buttons[7].pos = UIPixelPos(paddleBControlsX, winHeight-50)
+    buttons[4].pos = UIPixelPos(paddleAControlsX(), winHeight-90)
+    buttons[5].pos = UIPixelPos(paddleAControlsX(), winHeight-50)
+    buttons[6].pos = UIPixelPos(paddleBControlsX(), winHeight-90)
+    buttons[7].pos = UIPixelPos(paddleBControlsX(), winHeight-50)
 end
 function toggleAudio()
     global audioEnabled;
@@ -331,16 +324,13 @@ function toggleAudio()
     end
 end
 type PauseScene
-    sshot::Ptr{SDL_Texture}
     titleText::String
     subtitleText::String
 end
 function enterPauseGameLoop(renderer,win)
     global paused
-    sshot = getScreenshot(renderer)
-    scene = PauseScene(sshot, "$kGAME_NAME", "Main Menu")
+    scene = PauseScene("$kGAME_NAME", "Main Menu")
     runSceneGameLoop(scene, renderer, win, paused)
-    SDL_FreeSurface(scene.sshot)
 end
 function handleEvents!(scene::PauseScene, e,t)
     global playing,paused
@@ -356,7 +346,8 @@ end
 
 function render(scene::PauseScene, renderer, win)
     screenRect = SDL_Rect(0,0, cam.w, cam.h)
-    SDL_RenderCopy(renderer, scene.sshot, Ref(screenRect), Ref(screenRect))
+    # First render the scene under the pause menu so it looks like the pause is over it.
+    if (length(sceneStack) > 1) render(sceneStack[end-1], renderer, win) end
     SDL_SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
     SDL_RenderFillRect(renderer, Ref(screenRect))
     renderText(renderer, cam, scene.titleText, screenOffsetFromCenter(0,-40); fontSize=40)
@@ -364,8 +355,8 @@ function render(scene::PauseScene, renderer, win)
     for b in buttons
         render(b, cam, renderer)
     end
-    renderText(renderer, cam, "Player 1 Controls", UIPixelPos(paddleAControlsX,winHeight-115); fontSize = 15)
-    renderText(renderer, cam, "Player 2 Controls", UIPixelPos(paddleBControlsX,winHeight-115); fontSize = 15)
+    renderText(renderer, cam, "Player 1 Controls", UIPixelPos(paddleAControlsX(),winHeight-115); fontSize = 15)
+    renderText(renderer, cam, "Player 2 Controls", UIPixelPos(paddleBControlsX(),winHeight-115); fontSize = 15)
     renderText(renderer, cam, "Theme music copyright http://www.freesfx.co.uk", UIPixelPos(screenCenterX(), winHeight - 10); fontSize=10)
 end
 
