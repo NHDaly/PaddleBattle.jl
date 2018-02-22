@@ -19,6 +19,7 @@ end
 include("timing.jl")
 include("objects.jl")
 include("display.jl")
+include("keyboard.jl")
 
 const kGAME_NAME = "Power Pong!"
 
@@ -256,18 +257,20 @@ mutable struct GameControls
     GameControls() = new(false)
 end
 const gameControls = GameControls()
+
+getKeySym(e) = UInt32(parse("0b"*join(map(bits,  e[24:-1:21]))))
 function handleKeyPress(e,t)
     global paused,debugText
-    keySym = UInt32(parse("0b"*join(map(bits,  e[24:-1:21]))))
+    keySym = getKeySym(e)
     keyDown = (t == SDL_KEYDOWN)
-    if (keySym == SDLK_LEFT)
-        paddleBKeys.leftDown = keyDown
-    elseif (keySym == SDLK_RIGHT)
-        paddleBKeys.rightDown = keyDown
-    elseif (keySym == SDLK_a)
+    if (keySym == keySettings[:paddleALeft])
         paddleAKeys.leftDown = keyDown
-    elseif (keySym == SDLK_d)
+    elseif (keySym == keySettings[:paddleARight])
         paddleAKeys.rightDown = keyDown
+    elseif (keySym == keySettings[:paddleBLeft])
+        paddleBKeys.leftDown = keyDown
+    elseif (keySym == keySettings[:paddleBRight])
+        paddleBKeys.rightDown = keyDown
     elseif (keySym == SDLK_ESCAPE)
         if (!gameControls.escapeDown && keyDown)
             #if game_started[]  # Escape shouldn't start the game.
@@ -292,17 +295,33 @@ end
 buttons = [
          # Note that the text changes to "Continue" after first press.
          Button(UIPixelPos(0,0), 200, 30, "New Game", 20,
-                  ()->(global paused,game_started; paused[] = false; game_started[] = true;)),
+                  ()->(global paused,game_started; paused[] = false; game_started[] = true;))
          Button(UIPixelPos(0,0), 200, 30, "Sound on/off", 20,
-                  ()->(toggleAudio())),
+                  ()->(toggleAudio()))
          Button(UIPixelPos(0,0), 200, 30, "Quit", 20,
                   ()->(global paused, playing; paused[] = playing[] = false;))
+
+         # Key controls buttons
+         Button(UIPixelPos(0,0), 150, 30, keyDisplayNames[keySettings[:paddleALeft]], 20,
+                  ()->(tryChangingKeySettingButton(buttons[4], :paddleALeft)))
+         Button(UIPixelPos(0,0), 150, 30, keyDisplayNames[keySettings[:paddleARight]], 20,
+                  ()->(tryChangingKeySettingButton(buttons[5], :paddleARight)))
+         Button(UIPixelPos(0,0), 150, 30, keyDisplayNames[keySettings[:paddleBLeft]], 20,
+                  ()->(tryChangingKeySettingButton(buttons[6], :paddleBLeft)))
+         Button(UIPixelPos(0,0), 150, 30, keyDisplayNames[keySettings[:paddleBRight]], 20,
+                  ()->(tryChangingKeySettingButton(buttons[7], :paddleBRight)))
      ]
+paddleAControlsX = screenCenterX()-260
+paddleBControlsX = screenCenterX()+260
 function recenterButtons!()
     global buttons
     buttons[1].pos = screenOffsetFromCenter(0,56)
     buttons[2].pos = screenOffsetFromCenter(0,90)
     buttons[3].pos = screenOffsetFromCenter(0,124)
+    buttons[4].pos = UIPixelPos(paddleAControlsX, winHeight-90)
+    buttons[5].pos = UIPixelPos(paddleAControlsX, winHeight-50)
+    buttons[6].pos = UIPixelPos(paddleBControlsX, winHeight-90)
+    buttons[7].pos = UIPixelPos(paddleBControlsX, winHeight-50)
 end
 function toggleAudio()
     global audioEnabled;
@@ -345,6 +364,8 @@ function render(scene::PauseScene, renderer, win)
     for b in buttons
         render(b, cam, renderer)
     end
+    renderText(renderer, cam, "Player 1 Controls", UIPixelPos(paddleAControlsX,winHeight-115); fontSize = 15)
+    renderText(renderer, cam, "Player 2 Controls", UIPixelPos(paddleBControlsX,winHeight-115); fontSize = 15)
     renderText(renderer, cam, "Theme music copyright http://www.freesfx.co.uk", UIPixelPos(screenCenterX(), winHeight - 10); fontSize=10)
 end
 
@@ -396,6 +417,7 @@ function handleMouseClickButton!(e, clickType)
             if (clickType == SDL_MOUSEBUTTONDOWN)
                 clickedButton = b
                 didClickButton = true
+                break
             elseif clickedButton == b && clickType == SDL_MOUSEBUTTONUP
                 clickedButton = nothing
                 didClickButton = true
@@ -410,10 +432,7 @@ function handleMouseClickButton!(e, clickType)
 end
 
 function mouseOnButton(m::UIPixelPos, b::Button, cam)
-    println("m: $m")
-    println("b: $(b.pos)")
     topLeft = UIPixelPos(b.pos.x - b.w/2., b.pos.y - b.h/2.)
-    println("s: $(topLeft)")
     if m.x > topLeft.x && m.x <= topLeft.x + b.w &&
         m.y > topLeft.y && m.y <= topLeft.y + b.h
         return true
@@ -439,9 +458,10 @@ function change_dir_if_bundle()
     println("new pwd: $(pwd())")
 end
 function load_audio_files()
-    global pingSound, scoreSound
+    global pingSound, scoreSound, badKeySound
     pingSound = Mix_LoadWAV( "$assets/ping.wav" );
     scoreSound = Mix_LoadWAV( "$assets/score.wav" );
+    badKeySound = Mix_LoadWAV( "$assets/ping.wav" );
 end
 #displayIndex = 0
 #function MySDL_GetDisplayDPI(displayIndex)
@@ -496,5 +516,4 @@ end
 
 # julia_main([""])
 
-""
 #end # module

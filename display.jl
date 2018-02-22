@@ -72,16 +72,20 @@ function render(b::Button, cam::Camera, renderer)
     topLeft = UIPixelPos(b.pos.x - b.w/2., b.pos.y - b.h/2.)
     screenPos = uiToScreen(topLeft, cam)
     rect = SDL_Rect(screenPos.x, screenPos.y, screenScaleDims(b.w, b.h, cam)...)
+    x,y = Int[0], Int[0]
+    SDL_GetMouseState(pointer(x), pointer(y))
     if clickedButton == b
-        x,y = Int[0], Int[0]
-        SDL_GetMouseState(pointer(x), pointer(y))
         if mouseOnButton(UIPixelPos(x[],y[]),b,cam)
             SDL_SetRenderDrawColor(renderer, 30, 30, 130, 255)
         else
-            SDL_SetRenderDrawColor(renderer, 70, 30, 170, 255)
+            SDL_SetRenderDrawColor(renderer, 50, 50, 150, 255)
         end
     else
-        SDL_SetRenderDrawColor(renderer, 80, 80, 180, 255)
+        if mouseOnButton(UIPixelPos(x[],y[]),b,cam)
+            SDL_SetRenderDrawColor(renderer, 70, 70, 170, 255)
+        else
+            SDL_SetRenderDrawColor(renderer, 80, 80, 180, 255)
+        end
     end
     SDL_RenderFillRect(renderer, Ref(rect) )
     renderText(renderer, cam, b.text, b.pos; fontSize = b.fontSize)
