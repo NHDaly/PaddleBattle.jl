@@ -57,9 +57,10 @@ end
 """ Will they collide on the next update?"""
 willCollide(b::Ball, p::Paddle, dt) = willCollide(p,b,dt)
 function willCollide(p::Paddle, b::Ball, dt)
-    if (abs(p.pos.x - b.pos.x) <= (p.length/2.+ballWidth/2))
+     # If the ball is in the right X-axis vicinity of the paddle.
+    if (abs(p.pos.x - b.pos.x) <= (p.length/2.+ballWidth/2.+abs(b.vel.x)*ballWidth))
         l = Line(b.pos, b.pos+b.vel*dt) # If next update will bring collision.
-        return isColliding(p, l, ballWidth)
+        return isColliding(p, l, ballWidth)  # will it cross the paddle in the Y-axis
     else
         return false
     end
