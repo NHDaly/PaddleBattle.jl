@@ -1,8 +1,8 @@
 keySettings = Dict([
-    :paddleBLeft   => SDLK_LEFT
-    :paddleBRight  => SDLK_RIGHT
-    :paddleALeft   => SDLK_a
-    :paddleARight  => SDLK_d
+    :keyALeft   => SDLK_a
+    :keyARight  => SDLK_d
+    :keyBLeft   => SDLK_LEFT
+    :keyBRight  => SDLK_RIGHT
   ])
 
 keyDisplayNames = Dict([
@@ -50,13 +50,16 @@ keyDisplayNames = Dict([
     SDLK_9 => "9"
 
     SDLK_MINUS => "-"
-    SDLK_PLUS => "+"
+    SDLK_EQUALS => "="
+    SDLK_BACKSPACE => "Delete"
     SDLK_DELETE => "Delete"
 
     SDLK_TAB => "Tab"
     SDLK_LEFTBRACKET => "["
     SDLK_RIGHTBRACKET => "]"
     SDLK_BACKSLASH => "\\"
+    SDLK_SEMICOLON => ";"
+    SDLK_QUOTE => "'"
     SDLK_RETURN => "Return"
     SDLK_LSHIFT => "Left Shift"
     SDLK_COMMA => ","
@@ -68,21 +71,32 @@ keyDisplayNames = Dict([
   ])
 
 badKeySound = nothing
-function tryChangingKeySettingButton(keyButton::Button, keySetting::Symbol)
-    println("keySetting: $keySetting")
-    println("keySetting ptr: $(pointer_from_objref(keySetting))")
+function tryChangingKeySettingButton(keyControl::Symbol)
     e,eventType = nothing,nothing
     while eventType != SDL_KEYDOWN
         e, _ = pollEvent!()
         eventType = getEventType(e)
     end
     keySym = getKeySym(e)
+    # If it's the same key, we're all done.
+    if keySym == keySettings[keyControl]
+        return
+    end
     if !haskey(keyDisplayNames, keySym)
+        # If this isn't a valid key, error
         audioEnabled && Mix_PlayChannel( Int32(-1), badKeySound, Int32(0) )
+    elseif keySym in values(keySettings)
+        #  or if it's already being used somewhere else, swap them.
+        reverse_keySettings = Dict(value => key for (key, value) in keySettings)
+        prevKey = reverse_keySettings[keySym]
+
+        prevSym = keySettings[keyControl]
+        keySettings[prevKey] = prevSym
+        buttons[prevKey].text = keyDisplayNames[prevSym]
+        keySettings[keyControl] = keySym
+        buttons[keyControl].text = keyDisplayNames[keySym]
     else
-        keySettings[keySetting] = keySym
-        keyButton.text = keyDisplayNames[keySym]
-        println("keySetting: $keySetting")
-        println("keySetting ptr: $(pointer_from_objref(keySetting))")
+        keySettings[keyControl] = keySym
+        buttons[keyControl].text = keyDisplayNames[keySym]
     end
 end

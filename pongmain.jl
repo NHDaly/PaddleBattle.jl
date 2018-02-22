@@ -77,6 +77,7 @@ function getWindowSize(win)
     return w[],h[],w_highDPI[],h_highDPI[]
 end
 
+renderer = win = nothing
 paddleSpeed = 1000
 ballSpeed = 250
 paddleA = Paddle(WorldPos(0,200),200)
@@ -177,7 +178,8 @@ function handleEvents!(scene::GameScene, e,t)
          pause!(timer)
          enterPauseGameLoop(renderer,win)
          unpause!(timer)
-         buttons[1].text = "Continue" # After starting game
+         buttons[:bRestart].enabled = true # After starting game, enable "New Game"
+         buttons[:bNewContinue].text = "Continue" # After starting game
     end
 end
 
@@ -192,14 +194,6 @@ function render(scene::GameScene, renderer, win)
     render(paddleA, cam, renderer)
     render(paddleB, cam, renderer)
 
-    # Hack: check if it's a winner after rendering everything (except ball) so
-    # the final score shows up on winner screen.
-    if (scoreA >= winningScore)  enterWinnerGameLoop(renderer,win, "Player 1")
-    elseif (scoreB >= winningScore)  enterWinnerGameLoop(renderer,win, "Player 2")
-    end
-
-    # Hack: Render the ball *after* checking if it's a winner, so that way the
-    # ball doesn't show up on the winning player screen.
     render(ball, cam, renderer)
 end
 
@@ -227,24 +221,36 @@ function performUpdates!(scene::GameScene, dt)
     end
     update!(paddleA, paddleAKeys, dt)
     update!(paddleB, paddleBKeys, dt)
+
+    if (scoreA >= winningScore)  enterWinnerGameLoop(renderer,win, "Player 1")
+    elseif (scoreB >= winningScore)  enterWinnerGameLoop(renderer,win, "Player 2")
+    end
 end
 
 function enterWinnerGameLoop(renderer,win, winnerName)
-    global paused
-    paused[] = true
-    buttons[1].text = "New Game"
+    # Reset the buttons to the beginning of the game.
+    buttons[:bRestart].enabled = false # Nothing to restart
+    buttons[:bNewContinue].text = "New Game"
+    global paused,game_started; paused[] = true; game_started[] = false;
+
+    # Move the ball off-screen here so it doesn't show up on the winning
+    # player screen.
+    ball.pos = WorldPos(winWidth + 20, 0);
+
     scene = PauseScene("$winnerName wins!!", "")
     runSceneGameLoop(scene, renderer, win, paused)
 
-    # --------- Reset everything
+    # When the pause scene returns, reset the game before starting.
     resetGame()
 end
 function resetGame()
     global scoreA,scoreB
     scoreB = scoreA = 0
     ball.pos = WorldPos(0,0)
-    ball.vel = Vector2D(0,-ballSpeed)
-    buttons[1].text = "Continue" # After starting game
+    ball.vel = Vector2D(0,rand([ballSpeed,-ballSpeed]))
+
+    paddleA.pos = WorldPos(0,200)
+    paddleB.pos = WorldPos(0,-200)
 end
 
 mutable struct KeyControls
@@ -265,19 +271,19 @@ function handleKeyPress(e,t)
     global paused,debugText
     keySym = getKeySym(e)
     keyDown = (t == SDL_KEYDOWN)
-    if (keySym == keySettings[:paddleALeft])
+    if (keySym == keySettings[:keyALeft])
         paddleAKeys.leftDown = keyDown
-    elseif (keySym == keySettings[:paddleARight])
+    elseif (keySym == keySettings[:keyARight])
         paddleAKeys.rightDown = keyDown
-    elseif (keySym == keySettings[:paddleBLeft])
+    elseif (keySym == keySettings[:keyBLeft])
         paddleBKeys.leftDown = keyDown
-    elseif (keySym == keySettings[:paddleBRight])
+    elseif (keySym == keySettings[:keyBRight])
         paddleBKeys.rightDown = keyDown
     elseif (keySym == SDLK_ESCAPE)
         if (!gameControls.escapeDown && keyDown)
-            #if game_started[]  # Escape shouldn't start the game.
+            if game_started[]  # Escape shouldn't start the game.
                 paused[] = !paused[]
-            #end
+            end
         end
         gameControls.escapeDown = keyDown
     elseif (keySym == SDLK_BACKQUOTE)
@@ -285,36 +291,58 @@ function handleKeyPress(e,t)
     end
 end
 
-buttons = [
-         # Note that the text changes to "Continue" after first press.
-         Button(UIPixelPos(0,0), 200, 30, "New Game", 20,
-                  ()->(global paused,game_started; paused[] = false; game_started[] = true;))
-         Button(UIPixelPos(0,0), 200, 30, "Sound on/off", 20,
-                  ()->(toggleAudio()))
-         Button(UIPixelPos(0,0), 200, 30, "Quit", 20,
-                  ()->(global paused, playing; paused[] = playing[] = false;))
+kMainButtonColor = SDL_Color(80, 80, 180, 255)
+kKeySettingButtonColor = SDL_Color(170, 40, 43, 255)
+buttons = Dict([
+    # This button is disabled until the game starts.
+    :bRestart =>
+        Button(false, UIPixelPos(0,0), 200, 30, "New Game", 20,
+               kMainButtonColor,
+               ()->(resetGame(); buttons[:bNewContinue].callBack();))
+    # Note that this text changes to "Continue" after first press.
+    :bNewContinue =>
+        Button(true, UIPixelPos(0,0), 200, 30, "New Game", 20,
+               kMainButtonColor,
+               ()->(global paused,game_started; paused[] = false; game_started[] = true;))
+    :bSoundToggle =>
+        Button(true, UIPixelPos(0,0), 200, 30, "Sound on/off", 20,
+               kMainButtonColor,
+               ()->(toggleAudio()))
+    :bQuit =>
+        Button(true, UIPixelPos(0,0), 200, 30, "Quit", 20,
+               kMainButtonColor,
+               ()->(global paused, playing; paused[] = playing[] = false;))
 
-         # Key controls buttons
-         Button(UIPixelPos(0,0), 150, 30, keyDisplayNames[keySettings[:paddleALeft]], 20,
-                  ()->(tryChangingKeySettingButton(buttons[4], :paddleALeft)))
-         Button(UIPixelPos(0,0), 150, 30, keyDisplayNames[keySettings[:paddleARight]], 20,
-                  ()->(tryChangingKeySettingButton(buttons[5], :paddleARight)))
-         Button(UIPixelPos(0,0), 150, 30, keyDisplayNames[keySettings[:paddleBLeft]], 20,
-                  ()->(tryChangingKeySettingButton(buttons[6], :paddleBLeft)))
-         Button(UIPixelPos(0,0), 150, 30, keyDisplayNames[keySettings[:paddleBRight]], 20,
-                  ()->(tryChangingKeySettingButton(buttons[7], :paddleBRight)))
-     ]
+     # Key controls buttons
+    :keyALeft =>
+        Button(true, UIPixelPos(0,0), 110, 20, keyDisplayNames[keySettings[:keyALeft]], 16,
+               kKeySettingButtonColor,
+               ()->(tryChangingKeySettingButton(:keyALeft)))
+    :keyARight =>
+        Button(true, UIPixelPos(0,0), 110, 20, keyDisplayNames[keySettings[:keyARight]], 16,
+               kKeySettingButtonColor,
+               ()->(tryChangingKeySettingButton(:keyARight)))
+    :keyBLeft =>
+        Button(true, UIPixelPos(0,0), 110, 20, keyDisplayNames[keySettings[:keyBLeft]], 16,
+               kKeySettingButtonColor,
+               ()->(tryChangingKeySettingButton(:keyBLeft)))
+    :keyBRight =>
+        Button(true, UIPixelPos(0,0), 110, 20, keyDisplayNames[keySettings[:keyBRight]], 16,
+               kKeySettingButtonColor,
+               ()->(tryChangingKeySettingButton(:keyBRight)))
+  ])
 paddleAControlsX() = screenCenterX()-260
 paddleBControlsX() = screenCenterX()+260
 function recenterButtons!()
     global buttons
-    buttons[1].pos = screenOffsetFromCenter(0,56)
-    buttons[2].pos = screenOffsetFromCenter(0,90)
-    buttons[3].pos = screenOffsetFromCenter(0,124)
-    buttons[4].pos = UIPixelPos(paddleAControlsX(), winHeight-90)
-    buttons[5].pos = UIPixelPos(paddleAControlsX(), winHeight-50)
-    buttons[6].pos = UIPixelPos(paddleBControlsX(), winHeight-90)
-    buttons[7].pos = UIPixelPos(paddleBControlsX(), winHeight-50)
+    buttons[:bRestart].pos     = screenOffsetFromCenter(0,22)
+    buttons[:bNewContinue].pos = screenOffsetFromCenter(0,56)
+    buttons[:bSoundToggle].pos = screenOffsetFromCenter(0,90)
+    buttons[:bQuit].pos        = screenOffsetFromCenter(0,124)
+    buttons[:keyALeft].pos    = UIPixelPos(paddleAControlsX(), winHeight-90)
+    buttons[:keyARight].pos   = UIPixelPos(paddleAControlsX(), winHeight-65)
+    buttons[:keyBLeft].pos    = UIPixelPos(paddleBControlsX(), winHeight-90)
+    buttons[:keyBRight].pos   = UIPixelPos(paddleBControlsX(), winHeight-65)
 end
 function toggleAudio()
     global audioEnabled;
@@ -350,9 +378,9 @@ function render(scene::PauseScene, renderer, win)
     if (length(sceneStack) > 1) render(sceneStack[end-1], renderer, win) end
     SDL_SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
     SDL_RenderFillRect(renderer, Ref(screenRect))
-    renderText(renderer, cam, scene.titleText, screenOffsetFromCenter(0,-40); fontSize=40)
-    renderText(renderer, cam, scene.subtitleText, screenOffsetFromCenter(0,0); fontSize = 26)
-    for b in buttons
+    renderText(renderer, cam, scene.titleText, screenOffsetFromCenter(0,-100); fontSize=40)
+    renderText(renderer, cam, scene.subtitleText, screenOffsetFromCenter(0,-60); fontSize = 26)
+    for b in values(buttons)
         render(b, cam, renderer)
     end
     renderText(renderer, cam, "Player 1 Controls", UIPixelPos(paddleAControlsX(),winHeight-115); fontSize = 15)
@@ -403,7 +431,7 @@ function handleMouseClickButton!(e, clickType)
     mx = Int64(parse("0b"*join(map(bits,  e[24:-1:21]))));
     my = Int64(parse("0b"*join(map(bits,  e[28:-1:25]))));
     didClickButton = false
-    for b in buttons
+    for b in values(buttons)
         if mouseOnButton(UIPixelPos(mx,my),b,cam)
             if (clickType == SDL_MOUSEBUTTONDOWN)
                 clickedButton = b
@@ -423,6 +451,7 @@ function handleMouseClickButton!(e, clickType)
 end
 
 function mouseOnButton(m::UIPixelPos, b::Button, cam)
+    if (!b.enabled) return false end
     topLeft = UIPixelPos(b.pos.x - b.w/2., b.pos.y - b.h/2.)
     if m.x > topLeft.x && m.x <= topLeft.x + b.w &&
         m.y > topLeft.y && m.y <= topLeft.y + b.h
@@ -479,18 +508,14 @@ end
 #end
 
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
-    global paused,game_started, cam
+    global renderer, win, paused,game_started, cam
     SDL_JL_Init()
     change_dir_if_bundle()
     load_audio_files()
     music = Mix_LoadMUS( "$assets/music.wav" );
     win,renderer = makeWinRenderer()
     cam = Camera(WorldPos(0,0), winWidth_highDPI, winHeight_highDPI)
-    recenterButtons!()
-    paused[]=true
-    game_started[]=false
-    ball.pos = WorldPos(0,0)
-    ball.vel = Vector2D(0,-ballSpeed)
+    global paused,game_started; paused[] = true; game_started[] = false;
     # Warm up
     for i in 1:10
         pollEvent!()
@@ -500,6 +525,8 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
         #sleep(0.01)
     end
     audioEnabled && Mix_PlayMusic( music, Int32(-1) )
+    recenterButtons!()
+    resetGame();  # Initialize game stuff.
     scene = GameScene()
     runSceneGameLoop(scene, renderer, win, playing)
     return 0
