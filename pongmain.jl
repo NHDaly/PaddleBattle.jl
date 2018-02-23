@@ -79,7 +79,7 @@ end
 
 renderer = win = nothing
 paddleSpeed = 1000
-ballSpeed = 250
+ballSpeed = 350
 paddleA = Paddle(WorldPos(0,200),200)
 paddleB = Paddle(WorldPos(0,-200),200)
 ball = Ball(WorldPos(0,0), Vector2D(0,-ballSpeed))
