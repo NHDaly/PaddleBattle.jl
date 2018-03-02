@@ -62,10 +62,11 @@ function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL_Event})::C
                 winWidth_highDPI, winHeight_highDPI = w_highDPI, h_highDPI
                 cam.w, cam.h = winWidth_highDPI, winHeight_highDPI
                 recenterButtons!()
-                # Restart timer so it doesn't have a HUGE frame.
-                start!(timer)
             end
         end
+        # Note that window events pause the game, so at the end of any window
+        # event, restart the timer so it doesn't have a HUGE frame.
+        start!(timer)
     end
     return 0
 end#
