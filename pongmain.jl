@@ -153,9 +153,9 @@ end
 function performUpdates!(scene, dt) end  # default
 
 
-#SDL_Event() = [SDL_Event(NTuple{56, Uint8}(zeros(56,1)))]
-SDL_Event() = Array{UInt8}(zeros(56))
 function pollEvent!()
+    #SDL_Event() = [SDL_Event(NTuple{56, Uint8}(zeros(56,1)))]
+    SDL_Event() = Array{UInt8}(zeros(56))
     e = SDL_Event()
     success = (SDL_PollEvent(e) != 0)
     return e,success
@@ -233,11 +233,6 @@ function performUpdates!(scene::GameScene, dt)
     else
         update!(ball, dt)
     end
-
-    # Sometimes keys can get stuck like if the game was paused by the OS while a
-    # key was held down. Unstick them here.
-    double_check_keys();
-
     update!(paddleA, paddleAKeys, dt)
     update!(paddleB, paddleBKeys, dt)
 
