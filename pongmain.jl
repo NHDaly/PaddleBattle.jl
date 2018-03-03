@@ -1,6 +1,14 @@
 #module PongMain
 println("Start")
 
+# TODO: why does it sometimers hang when you quit.
+#  - My _guess_ is it's when it's got a big queue of events that haven't been
+#  processed, but that could be unrelated.
+# TODO: Why does the compiled game sometimes have huge cpu utilization? I
+# *think* _this_ is because of having a huge queue of unhandle events. It seems
+# to happen when the app is inactive for a while (like if it's maximized in a
+# different desktop)
+
 #using SDL2
 include("/Users/daly/.julia/v0.6/SDL2/src/SDL2.jl")
 
