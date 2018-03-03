@@ -120,6 +120,11 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
 
         # Update
         dt = elapsed(timer)
+        # Don't let the game proceed at fewer than this frames per second. If an
+        # update takes too long, allow the game to actually slow, rather than
+        # having too big of frames.
+        min_fps = 20.0
+        dt = min(dt, 1./min_fps)
         start!(timer)
         last_10_frame_times = push!(last_10_frame_times, dt)
         if length(last_10_frame_times) > 10; shift!(last_10_frame_times) ; end
