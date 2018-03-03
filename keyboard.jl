@@ -100,3 +100,48 @@ function tryChangingKeySettingButton(keyControl::Symbol)
         buttons[keyControl].text = keyDisplayNames[keySym]
     end
 end
+
+
+"""
+If the game state believes any of the keys are held down, just double
+check that they actually are held down. This is a little silly, but
+sometimes things can get out of sync, like if the player is holding a key
+when the game is paused by the OS for some reason (such as resizing).
+"""
+function double_check_keys()
+    println("PaddleA: $paddleAKeys")
+    if paddleAKeys.leftDown
+        println("get_key_state: $(get_key_state(keySettings[:keyALeft]))")
+        if !get_key_state(keySettings[:keyALeft])
+            paddleAKeys.leftDown = false
+        end
+    end
+    if paddleAKeys.rightDown
+        if !get_key_state(keySettings[:keyARight])
+            paddleAKeys.rightDown = false
+        end
+    end
+    if paddleBKeys.leftDown
+        if !get_key_state(keySettings[:keyBLeft])
+            paddleBKeys.leftDown = false
+        end
+    end
+    if paddleBKeys.rightDown
+        if !get_key_state(keySettings[:keyBRight])
+            paddleBKeys.rightDown = false
+        end
+    end
+end
+
+_keystates = nothing
+function get_key_state(keysym)
+    global _keystates
+    # initialize the first time
+    if _keystates == nothing _keystates = SDL_GetKeyboardState(C_NULL) end
+    if _keystates == C_NULL return end
+
+    SDL_PumpEvents();  # Not strictly necessary since SDL_PollEvent calls this.
+    # Note that Scancodes represent the physical keyboard layout instead of what
+    # characters the keys represent.
+    return Bool(unsafe_load(_keystates, 1+SDL_GetScancodeFromKey(Int32(keysym))))
+end
