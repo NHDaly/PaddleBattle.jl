@@ -33,6 +33,8 @@ const kGAME_NAME = "Power Pong!"
 const kSAFE_GAME_NAME = "PowerPong"
 
 winWidth, winHeight = Int32(800), Int32(600)
+# minWinWidth = Int32(660)  # I'm not sure if we actually need one...
+minWinHeight = Int32(425)  # Prevent getting any smaller than this.
 winWidth_highDPI, winHeight_highDPI = Int32(800), Int32(600)
 function makeWinRenderer()
     global winWidth, winHeight, winWidth_highDPI, winHeight_highDPI
@@ -67,6 +69,9 @@ function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL_Event})::C
             eventWin = SDL_GetWindowFromID(winID);
             if (eventWin == data_ptr)
                 w,h,w_highDPI,h_highDPI = getWindowSize(eventWin)
+                if h < minWinHeight
+                    w,h,w_highDPI,h_highDPI = resizeWindow(eventWin, w, minWinHeight)
+                end
                 winWidth, winHeight = w, h
                 winWidth_highDPI, winHeight_highDPI = w_highDPI, h_highDPI
                 cam.w, cam.h = winWidth_highDPI, winHeight_highDPI
@@ -78,7 +83,12 @@ function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL_Event})::C
         start!(timer)
     end
     return 0
-end#
+end
+function resizeWindow(win, width, height)
+    SDL_SetWindowSize(win, width, height)
+    return getWindowSize(win)
+end
+
 
 function getWindowSize(win)
     w,h,w_highDPI,h_highDPI = Int32[0],Int32[0],Int32[0],Int32[0]
