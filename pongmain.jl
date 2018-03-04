@@ -30,6 +30,7 @@ include("display.jl")
 include("keyboard.jl")
 
 const kGAME_NAME = "Power Pong!"
+const kSAFE_GAME_NAME = "PowerPong"
 
 winWidth, winHeight = Int32(800), Int32(600)
 winWidth_highDPI, winHeight_highDPI = Int32(800), Int32(600)
@@ -525,6 +526,8 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     global renderer, win, paused,game_started, cam
     SDL_JL_Init()
     change_dir_if_bundle()
+    init_prefspath()
+    load_prefs_backup()
     load_audio_files()
     music = Mix_LoadMUS( "$assets/music.wav" );
     win,renderer = makeWinRenderer()

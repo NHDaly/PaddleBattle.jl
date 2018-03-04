@@ -1,9 +1,10 @@
-keySettings = Dict([
+keySettingsDefault() = Dict([
     :keyALeft   => SDLK_a
     :keyARight  => SDLK_d
     :keyBLeft   => SDLK_LEFT
     :keyBRight  => SDLK_RIGHT
   ])
+keySettings = keySettingsDefault()
 
 keyDisplayNames = Dict([
     SDLK_RIGHT => "Right Arrow"
@@ -78,6 +79,11 @@ function tryChangingKeySettingButton(keyControl::Symbol)
         eventType = getEventType(e)
     end
     keySym = getKeySym(e)
+    tryChangingKeySettingButton(keyControl,keySym)
+    # Write new key settings!
+    write_prefs_backup()
+end
+function tryChangingKeySettingButton(keyControl::Symbol, keySym)
     # If it's the same key, we're all done.
     if keySym == keySettings[keyControl]
         return
@@ -99,4 +105,43 @@ function tryChangingKeySettingButton(keyControl::Symbol)
         keySettings[keyControl] = keySym
         buttons[keyControl].text = keyDisplayNames[keySym]
     end
+end
+
+_pp = nothing
+prefspath = nothing
+prefsfile = nothing
+function write_prefs_backup()
+    if prefsfile != nothing
+        write(prefsfile, serializeKeySettings()*"\n")
+    end
+end
+function load_prefs_backup()
+    if prefsfile != nothing && isfile(prefsfile)
+        f = open(prefsfile)
+        loadKeySettings(readline(f))
+    end
+end
+function init_prefspath()
+    global _pp, prefspath, prefsfile
+      _pp = SDL_GetPrefPath("nhdaly", kSAFE_GAME_NAME)
+      if _pp != Cstring(C_NULL)
+          prefspath = unsafe_string(_pp)
+          prefsfile = joinpath(prefspath, "settings.txt");
+      end
+    return prefspath
+end
+
+function loadKeySettings(prefs::String)
+    p_vals = map((v)->parse(UInt32,v), split(prefs))
+    tryChangingKeySettingButton(:keyALeft, p_vals[1])
+    tryChangingKeySettingButton(:keyARight, p_vals[2])
+    tryChangingKeySettingButton(:keyBLeft, p_vals[3])
+    tryChangingKeySettingButton(:keyBRight, p_vals[4])
+end
+function serializeKeySettings()
+    join([keySettings[:keyALeft],
+          keySettings[:keyARight],
+          keySettings[:keyBLeft],
+          keySettings[:keyBRight],
+         ], " ")
 end
