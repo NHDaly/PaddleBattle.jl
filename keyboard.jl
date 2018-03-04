@@ -105,6 +105,12 @@ function tryChangingKeySettingButton(keyControl::Symbol, keySym)
         keySettings[keyControl] = keySym
         buttons[keyControl].text = keyDisplayNames[keySym]
     end
+
+    if keySettings == keySettingsDefault()
+        buttons[:bResetDefaultKeys].enabled = false
+    else
+        buttons[:bResetDefaultKeys].enabled = true
+    end
 end
 
 _pp = nothing
@@ -144,4 +150,10 @@ function serializeKeySettings()
           keySettings[:keyBLeft],
           keySettings[:keyBRight],
          ], " ")
+end
+
+function resetDefaultKeys()
+    for (key,val) in keySettingsDefault()
+        tryChangingKeySettingButton(key,val)
+    end
 end

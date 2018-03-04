@@ -345,6 +345,11 @@ buttons = Dict([
         Button(true, UIPixelPos(0,0), 110, 20, keyDisplayNames[keySettings[:keyBRight]], 16,
                kKeySettingButtonColor,
                ()->(tryChangingKeySettingButton(:keyBRight)))
+
+    :bResetDefaultKeys =>
+        Button(false, UIPixelPos(0,0), 240, 30, "Reset Default Controls", 16,
+               kKeySettingButtonColor,
+               ()->(resetDefaultKeys()))
   ])
 paddleAControlsX() = screenCenterX()-260
 paddleBControlsX() = screenCenterX()+260
@@ -358,6 +363,7 @@ function recenterButtons!()
     buttons[:keyARight].pos   = UIPixelPos(paddleAControlsX(), winHeight-65)
     buttons[:keyBLeft].pos    = UIPixelPos(paddleBControlsX(), winHeight-90)
     buttons[:keyBRight].pos   = UIPixelPos(paddleBControlsX(), winHeight-65)
+    buttons[:bResetDefaultKeys].pos   = UIPixelPos(screenCenterX(), winHeight-55)
 end
 function toggleAudio()
     global audioEnabled;
