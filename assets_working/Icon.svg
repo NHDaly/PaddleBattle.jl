@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: SketchAPI 5.1.250 <https://api.sketch.io/> -->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketchjs="https://sketch.io/dtd/" style="" sketchjs:metadata="eyJ0aXRsZSI6IkRyYXdpbmciLCJkZXNjcmlwdGlvbiI6Ik1hZGUgd2l0aCBTa2V0Y2hwYWQgLSBodHRwczovL3NrZXRjaC5pby9za2V0Y2hwYWQiLCJtZXRhZGF0YSI6e30sImNsaXBQYXRoIjp7ImVuYWJsZWQiOnRydWUsInN0eWxlIjp7InN0cm9rZVN0eWxlIjoiYmxhY2siLCJsaW5lV2lkdGgiOjF9fSwiZXhwb3J0RFBJIjo3MiwiZXhwb3J0Rm9ybWF0IjoicG5nIiwiZXhwb3J0UXVhbGl0eSI6MC45NSwidW5pdHMiOiJweCIsIndpZHRoIjo3NDQsImhlaWdodCI6ODAwLCJwYWdlcyI6eyJsZW5ndGgiOjEsImRhdGEiOlt7IndpZHRoIjo3NDQsImhlaWdodCI6ODAwfV19fQ==" width="530" height="530" viewBox="0 0 530 530" sketchjs:version="5.1.250">
+  <clipPath id="clipCircle">
+    <circle r="240" cx="265" cy="265"/>
+  </clipPath>
+  <defs>
+  <filter id="f4" x="-100%" y="-200%" width="350%" height="350%">
+    <feOffset result="offOut" in="SourceGraphic" dx="-1" dy="5" />
+    <feColorMatrix result="matrixOut" in="offOut" type="matrix"
+    values="0.5 0 0 0 0 0 0.5 0 0 0 0 0 0.5 0 0 0 0 0 1 0" />
+    <feGaussianBlur result="blurOut" in="matrixOut" stdDeviation="3" />
+    <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
+  </filter>
+  </defs>
+
+  <circle fill="#bbbbbb" r="250" cx="265" cy="265" filter="url(#f4)"/>
+  <circle fill="#fefefe" r="249" cx="265" cy="265" filter="url(#f4)"/>
+  <rect fill="#dfdfdf" width="520" height="520" clip-path="url(#clipCircle)"/>
+
+  <rect fill="#4a87ff" opacity="0.2" width="37" height="37" x="173" y="346"/>
+  <rect fill="#4a87ff" opacity="0.5" width="37" height="37" x="230" y="278"/>
+  <rect fill="#4a87ff" opacity="0.8" width="37" height="37" x="273" y="227"/>
+  <rect fill="#4a87ff" opacity="1" width="37" height="37" x="309" y="185"/>
+  <rect fill="#074dff" opacity="1" width="37" height="37" x="325" y="166"/>
+  <rect fill="#e90808" width="375" height="42" x="-10" y="418" clip-path="url(#clipCircle)"/>
+  <rect fill="#e90808" width="375" height="42" x="116" y="70" clip-path="url(#clipCircle)"/>
+</svg>
