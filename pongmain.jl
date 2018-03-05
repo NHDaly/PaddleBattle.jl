@@ -8,6 +8,7 @@ println("Start")
 # *think* _this_ is because of having a huge queue of unhandle events. It seems
 # to happen when the app is inactive for a while (like if it's maximized in a
 # different desktop)
+# TODO: first pause after winning+new game doesn't have a "continue" button.
 
 #using SDL2
 include("/Users/daly/.julia/v0.6/SDL2/src/SDL2.jl")
@@ -332,9 +333,11 @@ buttons = Dict([
                kMainButtonColor,
                ()->(global paused,game_started; paused[] = false; game_started[] = true;))
     :bSoundToggle =>
-        Button(true, UIPixelPos(0,0), 200, 30, "Sound on/off", 20,
+        CheckboxButton(true,
+            Button(true, UIPixelPos(0,0), 200, 30, "Sound on/off", 20,
                kMainButtonColor,
-               ()->(toggleAudio()))
+               (enabled)->(toggleAudio(enabled)))
+           )
     :bQuit =>
         Button(true, UIPixelPos(0,0), 200, 30, "Quit", 20,
                kMainButtonColor,
@@ -369,7 +372,7 @@ function recenterButtons!()
     global buttons
     buttons[:bRestart].pos     = screenOffsetFromCenter(0,22)
     buttons[:bNewContinue].pos = screenOffsetFromCenter(0,56)
-    buttons[:bSoundToggle].pos = screenOffsetFromCenter(0,90)
+    buttons[:bSoundToggle].button.pos = screenOffsetFromCenter(0,90)
     buttons[:bQuit].pos        = screenOffsetFromCenter(0,124)
     buttons[:keyALeft].pos    = UIPixelPos(paddleAControlsX(), winHeight-90)
     buttons[:keyARight].pos   = UIPixelPos(paddleAControlsX(), winHeight-65)
@@ -377,9 +380,9 @@ function recenterButtons!()
     buttons[:keyBRight].pos   = UIPixelPos(paddleBControlsX(), winHeight-65)
     buttons[:bResetDefaultKeys].pos   = UIPixelPos(screenCenterX(), winHeight-55)
 end
-function toggleAudio()
+function toggleAudio(enabled)
     global audioEnabled;
-    audioEnabled = !audioEnabled;
+    audioEnabled = enabled;
     if (audioEnabled) Mix_ResumeMusic()
     else  Mix_PauseMusic()
     end
@@ -399,7 +402,7 @@ function handleEvents!(scene::PauseScene, e,t)
     if (t == SDL_KEYDOWN || t == SDL_KEYUP);  handleKeyPress(e,t);
     elseif (t == SDL_MOUSEBUTTONUP || t == SDL_MOUSEBUTTONDOWN)
         b = handleMouseClickButton!(e,t);
-        if (b != nothing); b.callBack(); end
+        if (b != nothing); run(b); end
     elseif (t == SDL_QUIT);
         playing[]=false; paused[]=false;
     end
@@ -483,6 +486,9 @@ function handleMouseClickButton!(e, clickType)
     return nothing
 end
 
+function mouseOnButton(m::UIPixelPos, b::CheckboxButton, cam)
+    return mouseOnButton(m, b.button, cam)
+end
 function mouseOnButton(m::UIPixelPos, b::Button, cam)
     if (!b.enabled) return false end
     topLeft = UIPixelPos(b.pos.x - b.w/2., b.pos.y - b.h/2.)
