@@ -62,6 +62,7 @@ function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL_Event})::C
     event = unsafe_load(event_ptr, 1)
     t = getEventType(event)
     if (t == SDL_WINDOWEVENT)
+        paused = true  # Stop game playing so resizing doesn't cause problems.
         e = event._SDL_Event
         winEvent = UInt8(parse("0b"*join(map(bits,  e[13:-1:13]))))
         if (winEvent == SDL_WINDOWEVENT_RESIZED)
@@ -81,6 +82,7 @@ function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL_Event})::C
         # Note that window events pause the game, so at the end of any window
         # event, restart the timer so it doesn't have a HUGE frame.
         start!(timer)
+        paused = false  # Allow game to resume now that resizing is done.
     end
     return 0
 end
