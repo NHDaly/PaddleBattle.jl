@@ -1,80 +1,80 @@
 keySettingsDefault() = Dict([
-    :keyALeft   => SDLK_a
-    :keyARight  => SDLK_d
-    :keyBLeft   => SDLK_LEFT
-    :keyBRight  => SDLK_RIGHT
+    :keyALeft   => SDL2.SDLK_a
+    :keyARight  => SDL2.SDLK_d
+    :keyBLeft   => SDL2.SDLK_LEFT
+    :keyBRight  => SDL2.SDLK_RIGHT
   ])
 keySettings = keySettingsDefault()
 
 keyDisplayNames = Dict([
-    SDLK_RIGHT => "Right Arrow"
-    SDLK_LEFT => "Left Arrow"
-    SDLK_UP => "Up Arrow"
-    SDLK_DOWN => "Down Arrow"
+    SDL2.SDLK_RIGHT => "Right Arrow"
+    SDL2.SDLK_LEFT => "Left Arrow"
+    SDL2.SDLK_UP => "Up Arrow"
+    SDL2.SDLK_DOWN => "Down Arrow"
 
-    SDLK_a => "A"
-    SDLK_b => "B"
-    SDLK_c => "C"
-    SDLK_d => "D"
-    SDLK_e => "E"
-    SDLK_f => "F"
-    SDLK_g => "G"
-    SDLK_h => "H"
-    SDLK_i => "I"
-    SDLK_j => "J"
-    SDLK_k => "K"
-    SDLK_l => "L"
-    SDLK_m => "M"
-    SDLK_n => "N"
-    SDLK_o => "O"
-    SDLK_p => "P"
-    SDLK_q => "Q"
-    SDLK_r => "R"
-    SDLK_s => "S"
-    SDLK_t => "T"
-    SDLK_u => "U"
-    SDLK_v => "V"
-    SDLK_w => "W"
-    SDLK_x => "X"
-    SDLK_y => "Y"
-    SDLK_z => "Z"
+    SDL2.SDLK_a => "A"
+    SDL2.SDLK_b => "B"
+    SDL2.SDLK_c => "C"
+    SDL2.SDLK_d => "D"
+    SDL2.SDLK_e => "E"
+    SDL2.SDLK_f => "F"
+    SDL2.SDLK_g => "G"
+    SDL2.SDLK_h => "H"
+    SDL2.SDLK_i => "I"
+    SDL2.SDLK_j => "J"
+    SDL2.SDLK_k => "K"
+    SDL2.SDLK_l => "L"
+    SDL2.SDLK_m => "M"
+    SDL2.SDLK_n => "N"
+    SDL2.SDLK_o => "O"
+    SDL2.SDLK_p => "P"
+    SDL2.SDLK_q => "Q"
+    SDL2.SDLK_r => "R"
+    SDL2.SDLK_s => "S"
+    SDL2.SDLK_t => "T"
+    SDL2.SDLK_u => "U"
+    SDL2.SDLK_v => "V"
+    SDL2.SDLK_w => "W"
+    SDL2.SDLK_x => "X"
+    SDL2.SDLK_y => "Y"
+    SDL2.SDLK_z => "Z"
 
-    SDLK_0 => "0"
-    SDLK_1 => "1"
-    SDLK_2 => "2"
-    SDLK_3 => "3"
-    SDLK_4 => "4"
-    SDLK_5 => "5"
-    SDLK_6 => "6"
-    SDLK_7 => "7"
-    SDLK_8 => "8"
-    SDLK_9 => "9"
+    SDL2.SDLK_0 => "0"
+    SDL2.SDLK_1 => "1"
+    SDL2.SDLK_2 => "2"
+    SDL2.SDLK_3 => "3"
+    SDL2.SDLK_4 => "4"
+    SDL2.SDLK_5 => "5"
+    SDL2.SDLK_6 => "6"
+    SDL2.SDLK_7 => "7"
+    SDL2.SDLK_8 => "8"
+    SDL2.SDLK_9 => "9"
 
-    SDLK_MINUS => "-"
-    SDLK_EQUALS => "="
-    SDLK_BACKSPACE => "Delete"
-    SDLK_DELETE => "Delete"
+    SDL2.SDLK_MINUS => "-"
+    SDL2.SDLK_EQUALS => "="
+    SDL2.SDLK_BACKSPACE => "Delete"
+    SDL2.SDLK_DELETE => "Delete"
 
-    SDLK_TAB => "Tab"
-    SDLK_LEFTBRACKET => "["
-    SDLK_RIGHTBRACKET => "]"
-    SDLK_BACKSLASH => "\\"
-    SDLK_SEMICOLON => ";"
-    SDLK_QUOTE => "'"
-    SDLK_RETURN => "Return"
-    SDLK_LSHIFT => "Left Shift"
-    SDLK_COMMA => ","
-    SDLK_PERIOD => "."
-    SDLK_SLASH => "/"
-    SDLK_RSHIFT => "Right Shift"
+    SDL2.SDLK_TAB => "Tab"
+    SDL2.SDLK_LEFTBRACKET => "["
+    SDL2.SDLK_RIGHTBRACKET => "]"
+    SDL2.SDLK_BACKSLASH => "\\"
+    SDL2.SDLK_SEMICOLON => ";"
+    SDL2.SDLK_QUOTE => "'"
+    SDL2.SDLK_RETURN => "Return"
+    SDL2.SDLK_LSHIFT => "Left Shift"
+    SDL2.SDLK_COMMA => ","
+    SDL2.SDLK_PERIOD => "."
+    SDL2.SDLK_SLASH => "/"
+    SDL2.SDLK_RSHIFT => "Right Shift"
 
-    SDLK_SPACE => "Space"
+    SDL2.SDLK_SPACE => "Space"
   ])
 
 badKeySound = nothing
 function tryChangingKeySettingButton(keyControl::Symbol)
     e,eventType = nothing,nothing
-    while eventType != SDL_KEYDOWN
+    while eventType != SDL2.KEYDOWN
         e, _ = pollEvent!()
         eventType = getEventType(e)
     end
@@ -129,7 +129,7 @@ function load_prefs_backup()
 end
 function init_prefspath()
     global _pp, prefspath, prefsfile
-      _pp = SDL_GetPrefPath("nhdaly", kSAFE_GAME_NAME)
+      _pp = SDL2.GetPrefPath("nhdaly", kSAFE_GAME_NAME)
       if _pp != Cstring(C_NULL)
           prefspath = unsafe_string(_pp)
           prefsfile = joinpath(prefspath, "settings.txt");

@@ -4,14 +4,19 @@ println("Start")
 # TODO: why does it sometimers hang when you quit.
 #  - My _guess_ is it's when it's got a big queue of events that haven't been
 #  processed, but that could be unrelated.
+#   - this doesn't really make sense: the music stops immediately so it's
+#     clearly already hit the "quit" click event, which was the last thing you
+#     did, so the queue must be clear.
+#  - It happend for >10s on the compiled game, not just thru Atom... HIGH PRIORITY!
+#   - And after, cmd-tab was broken til I relaunched the Dock thru Activity Monitor. Yikes!
 # TODO: Why does the compiled game sometimes have huge cpu utilization? I
 # *think* _this_ is because of having a huge queue of unhandle events. It seems
 # to happen when the app is inactive for a while (like if it's maximized in a
 # different desktop)
 # TODO: first pause after winning+new game doesn't have a "continue" button.
 
-#using SDL2
-include("/Users/daly/.julia/v0.6/SDL2/src/SDL2.jl")
+using SDL2
+#include("/Users/daly/.julia/v0.6/SDL2/src/SDL2.jl")
 
 const assets = "assets"
 
@@ -21,8 +26,8 @@ if get(ENV, "COMPILING_APPLE_BUNDLE", "false") == "true"
     #  actually been called yet, and so the original constants haven't been
     #  "compiled in".)
     const libSDL = "libSDL2.dylib"
-    const SDL_ttf = "libSDL2_ttf.dylib"
-    const SDL_mixer = "libSDL2_mixer.dylib"
+    const SDL2.ttf = "libSDL2_ttf.dylib"
+    const SDL2.mixer = "libSDL2_mixer.dylib"
 end
 
 include("timing.jl")
@@ -39,36 +44,39 @@ minWinHeight = Int32(425)  # Prevent getting any smaller than this.
 winWidth_highDPI, winHeight_highDPI = Int32(800), Int32(600)
 function makeWinRenderer()
     global winWidth, winHeight, winWidth_highDPI, winHeight_highDPI
-    #win = SDL_CreateWindow("Hello World!", Int32(100), Int32(100), winWidth, winHeight, UInt32(SDL_WINDOW_SHOWN))
+    #win = SDL2.CreateWindow("Hello World!", Int32(100), Int32(100), winWidth, winHeight, UInt32(SDL2.WINDOW_SHOWN))
 
-    win = SDL_CreateWindow(kGAME_NAME,
-        Int32(SDL_WINDOWPOS_CENTERED), Int32(SDL_WINDOWPOS_CENTERED), winWidth, winHeight,
-        SDL_WINDOW_ALLOW_HIGHDPI|SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE|SDL_WINDOW_SHOWN);
-    SDL_AddEventWatch(cfunction(resizingEventWatcher, Cint, Tuple{Ptr{Void}, Ptr{SDL_Event}}), win);
+    win = SDL2.CreateWindow(kGAME_NAME,
+        #Int32(SDL2.WINDOWPOS_CENTERED()), Int32(SDL2.WINDOWPOS_CENTERED()), winWidth, winHeight,
+        Int32(0), Int32(0), winWidth, winHeight,
+        Int32(SDL2.WINDOW_ALLOW_HIGHDPI|SDL2.WINDOW_OPENGL|SDL2.WINDOW_RESIZABLE|SDL2.WINDOW_SHOWN));
+    SDL2.AddEventWatch(cfunction(resizingEventWatcher, Cint, Tuple{Ptr{Void}, Ptr{SDL2.Event}}), win);
 
     # Find out how big the created window actually was (depends on the system):
     winWidth, winHeight, winWidth_highDPI, winHeight_highDPI = getWindowSize(win)
     #cam.w, cam.h = winWidth_highDPI, winHeight_highDPI
 
-    renderer = SDL_CreateRenderer(win, Int32(-1), UInt32(SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC))
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND)
-    #renderer = SDL_CreateRenderer(win, Int32(-1), Int32(0))
+    renderer = SDL2.CreateRenderer(win, Int32(-1), Int32(SDL2.RENDERER_ACCELERATED | SDL2.RENDERER_PRESENTVSYNC))
+    SDL2.SetRenderDrawBlendMode(renderer, UInt32(SDL2.BLENDMODE_BLEND))
+    #renderer = SDL2.CreateRenderer(win, Int32(-1), Int32(0))
     return win,renderer
 end
 
 # This huge function just handles resize events. I'm not sure why it needs to be
 # a callback instead of just the regular pollEvent..
-function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL_Event})::Cint
+function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::Cint
     global winWidth, winHeight, cam
     event = unsafe_load(event_ptr, 1)
     t = getEventType(event)
-    if (t == SDL_WINDOWEVENT)
+    if (t == SDL2.WINDOWEVENT)
         paused = true  # Stop game playing so resizing doesn't cause problems.
-        e = event._SDL_Event
-        winEvent = UInt8(parse("0b"*join(map(bits,  e[13:-1:13]))))
-        if (winEvent == SDL_WINDOWEVENT_RESIZED)
+        e = event._Event
+        #evtype = SDL2.Event(event._Event[1])
+        #winEvent = UInt8(parse("0b"*join(map(bits,  e[13:-1:13]))))
+        winEvent = event._Event[13]
+        if (winEvent == SDL2.WINDOWEVENT_RESIZED)
             winID = UInt32(parse("0b"*join(map(bits,  e[12:-1:9]))))
-            eventWin = SDL_GetWindowFromID(winID);
+            eventWin = SDL2.GetWindowFromID(winID);
             if (eventWin == data_ptr)
                 w,h,w_highDPI,h_highDPI = getWindowSize(eventWin)
                 if h < minWinHeight
@@ -88,15 +96,15 @@ function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL_Event})::C
     return 0
 end
 function resizeWindow(win, width, height)
-    SDL_SetWindowSize(win, width, height)
+    SDL2.SetWindowSize(win, width, height)
     return getWindowSize(win)
 end
 
 
 function getWindowSize(win)
     w,h,w_highDPI,h_highDPI = Int32[0],Int32[0],Int32[0],Int32[0]
-    SDL_GetWindowSize(win, w, h)
-    SDL_GL_GetDrawableSize(win, w_highDPI, h_highDPI)
+    SDL2.GetWindowSize(win, w, h)
+    SDL2.GL_GetDrawableSize(win, w_highDPI, h_highDPI)
     return w[],h[],w_highDPI[],h_highDPI[]
 end
 
@@ -117,7 +125,8 @@ game_started = Ref(game_started_)
 playing_ = true
 playing = Ref(playing_)
 debugText = false
-audioEnabled = true
+#audioEnabled = true
+audioEnabled = false  # TODO: reenable audio once Mixer is supported!
 last_10_frame_times = [1.]
 timer = Timer()
 i = 1
@@ -138,7 +147,7 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
 
         # Render
         render(scene, renderer, win)
-        SDL_RenderPresent(renderer)
+        SDL2.RenderPresent(renderer)
 
         # Update
         dt = elapsed(timer)
@@ -156,7 +165,7 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
         #sleep(0.01)
 
         if (playing[] == false)
-            SDL_QuitAll()
+            SDL2.QuitAll()  # TODO: Add support for quit.
             quit()
         end
 
@@ -168,18 +177,18 @@ function performUpdates!(scene, dt) end  # default
 
 
 function pollEvent!()
-    #SDL_Event() = [SDL_Event(NTuple{56, Uint8}(zeros(56,1)))]
-    SDL_Event() = Array{UInt8}(zeros(56))
-    e = SDL_Event()
-    success = (SDL_PollEvent(e) != 0)
+    #SDL2.Event() = [SDL2.Event(NTuple{56, Uint8}(zeros(56,1)))]
+    SDL2.Event() = Array{UInt8}(zeros(56))
+    e = SDL2.Event()
+    success = (SDL2.PollEvent(e) != 0)
     return e,success
 end
 function getEventType(e::Array{UInt8})
     # HAHA This is still pretty janky, but I guess that's all you can do w/ unions.
     bitcat(UInt32, e[4:-1:1])
 end
-function getEventType(e::SDL_Event)
-    bitcat(UInt32, e._SDL_Event[4:-1:1])
+function getEventType(e::SDL2.Event)
+    e._Event[1]
 end
 
 function bitcat(outType::Type{T}, arr)::T where T<:Number
@@ -198,8 +207,8 @@ end
 function handleEvents!(scene::GameScene, e,t)
     global playing,paused
     # Handle Events
-    if (t == SDL_KEYDOWN || t == SDL_KEYUP);  handleKeyPress(e,t);
-    elseif (t == SDL_QUIT);  SDL_Quit(); playing[] = false;
+    if (t == SDL2.KEYDOWN || t == SDL2.KEYUP);  handleKeyPress(e,t);
+    elseif (t == SDL2.QUIT);  SDL2.Quit(); playing[] = false;
     end
 
     if (paused[])
@@ -215,8 +224,8 @@ end
 function render(scene::GameScene, renderer, win)
     global ball,scoreA,scoreB,last_10_frame_times,paused,playing
 
-    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255)
-    SDL_RenderClear(renderer)
+    SDL2.SetRenderDrawColor(renderer, 200, 200, 200, 255)
+    SDL2.RenderClear(renderer)
 
     renderScore(renderer)
     render(paddleA, cam, renderer)
@@ -298,7 +307,7 @@ getKeySym(e) = UInt32(parse("0b"*join(map(bits,  e[24:-1:21]))))
 function handleKeyPress(e,t)
     global paused,debugText
     keySym = getKeySym(e)
-    keyDown = (t == SDL_KEYDOWN)
+    keyDown = (t == SDL2.KEYDOWN)
     if (keySym == keySettings[:keyALeft])
         paddleAKeys.leftDown = keyDown
     elseif (keySym == keySettings[:keyARight])
@@ -307,20 +316,20 @@ function handleKeyPress(e,t)
         paddleBKeys.leftDown = keyDown
     elseif (keySym == keySettings[:keyBRight])
         paddleBKeys.rightDown = keyDown
-    elseif (keySym == SDLK_ESCAPE)
+    elseif (keySym == SDL2.SDLK_ESCAPE)
         if (!gameControls.escapeDown && keyDown)
             if game_started[]  # Escape shouldn't start the game.
                 paused[] = !paused[]
             end
         end
         gameControls.escapeDown = keyDown
-    elseif (keySym == SDLK_BACKQUOTE)
+    elseif (keySym == SDL2.SDLK_BACKQUOTE)
         keyDown && (debugText = !debugText)
     end
 end
 
-kMainButtonColor = SDL_Color(80, 80, 180, 255)
-kKeySettingButtonColor = SDL_Color(170, 40, 43, 255)
+kMainButtonColor = SDL2.Color(80, 80, 180, 255)
+kKeySettingButtonColor = SDL2.Color(170, 40, 43, 255)
 buttons = Dict([
     # This button is disabled until the game starts.
     :bRestart =>
@@ -399,21 +408,21 @@ end
 function handleEvents!(scene::PauseScene, e,t)
     global playing,paused
     # Handle Events
-    if (t == SDL_KEYDOWN || t == SDL_KEYUP);  handleKeyPress(e,t);
-    elseif (t == SDL_MOUSEBUTTONUP || t == SDL_MOUSEBUTTONDOWN)
+    if (t == SDL2.KEYDOWN || t == SDL2.KEYUP);  handleKeyPress(e,t);
+    elseif (t == SDL2.MOUSEBUTTONUP || t == SDL2.MOUSEBUTTONDOWN)
         b = handleMouseClickButton!(e,t);
         if (b != nothing); run(b); end
-    elseif (t == SDL_QUIT);
+    elseif (t == SDL2.QUIT);
         playing[]=false; paused[]=false;
     end
 end
 
 function render(scene::PauseScene, renderer, win)
-    screenRect = SDL_Rect(0,0, cam.w, cam.h)
+    screenRect = SDL2.Rect(0,0, cam.w, cam.h)
     # First render the scene under the pause menu so it looks like the pause is over it.
     if (length(sceneStack) > 1) render(sceneStack[end-1], renderer, win) end
-    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
-    SDL_RenderFillRect(renderer, Ref(screenRect))
+    SDL2.SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
+    SDL2.RenderFillRect(renderer, Ref(screenRect))
     renderText(renderer, cam, scene.titleText, screenOffsetFromCenter(0,-100); fontSize=40)
     renderText(renderer, cam, scene.subtitleText, screenOffsetFromCenter(0,-60); fontSize = 26)
     for b in values(buttons)
@@ -437,6 +446,9 @@ function renderFPS(renderer,last_10_frame_times)
 end
 function renderText(renderer, cam::Camera, txt, pos::UIPixelPos
                      ; fontName = "$assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf", fontSize=26)
+   # TODO: put back fonts once supported!
+    return  # TODO undo this
+
    scale = worldScale(cam)
    fontSize = scale*fontSize
    fontKey = (fontName, fontSize)
@@ -446,16 +458,16 @@ function renderText(renderer, cam::Camera, txt, pos::UIPixelPos
        font = TTF_OpenFont(fontKey...)
        fonts[fontKey] = font
    end
-   text = TTF_RenderText_Blended(font, txt, SDL_Color(20,20,20,255))
-   tex = SDL_CreateTextureFromSurface(renderer,text)
+   text = TTF_RenderText_Blended(font, txt, SDL2.Color(20,20,20,255))
+   tex = SDL2.CreateTextureFromSurface(renderer,text)
 
    fx,fy = Cint[1], Cint[1]
    TTF_SizeText(font, txt, pointer(fx), pointer(fy))
    fx,fy = fx[1],fy[1]
 
    screenPos = uiToScreen(pos, cam)
-   SDL_RenderCopy(renderer, tex, C_NULL, pointer_from_objref(SDL_Rect(Int(floor(screenPos.x-fx/2.)), Int(floor(screenPos.y-fy/2.)),fx,fy)))
-   SDL_FreeSurface(tex)
+   SDL2.RenderCopy(renderer, tex, C_NULL, pointer_from_objref(SDL2.Rect(Int(floor(screenPos.x-fx/2.)), Int(floor(screenPos.y-fy/2.)),fx,fy)))
+   SDL2.FreeSurface(tex)
 end
 
 clickedButton = nothing
@@ -469,18 +481,18 @@ function handleMouseClickButton!(e, clickType)
     didClickButton = false
     for b in values(buttons)
         if mouseOnButton(UIPixelPos(mx,my),b,cam)
-            if (clickType == SDL_MOUSEBUTTONDOWN)
+            if (clickType == SDL2.MOUSEBUTTONDOWN)
                 clickedButton = b
                 didClickButton = true
                 break
-            elseif clickedButton == b && clickType == SDL_MOUSEBUTTONUP
+            elseif clickedButton == b && clickType == SDL2.MOUSEBUTTONUP
                 clickedButton = nothing
                 didClickButton = true
                 return b
             end
         end
     end
-    if clickedButton != nothing && clickType == SDL_MOUSEBUTTONUP && didClickButton == false
+    if clickedButton != nothing && clickType == SDL2.MOUSEBUTTONUP && didClickButton == false
         clickedButton = nothing
     end
     return nothing
@@ -523,7 +535,7 @@ function load_audio_files()
     badKeySound = Mix_LoadWAV( "$assets/ping.wav" );
 end
 #displayIndex = 0
-#function MySDL_GetDisplayDPI(displayIndex)
+#function MySDL2.GetDisplayDPI(displayIndex)
 #    const kSysDefaultDpi =
 #        if is_apple()
 #            Cfloat(72.0)
@@ -536,7 +548,7 @@ end
 #    dpi = Cfloat[0.0]
 #    hdpi = Cfloat[0.0]
 #    vdpi = Cfloat[0.0]
-#    succ = SDL_GetDisplayDPI(Int32(0), dpi, hdpi, vdpi)
+#    succ = SDL2.GetDisplayDPI(Int32(0), dpi, hdpi, vdpi)
 #    if (succ != 0)
 #        # Failed to get DPI, so just return the default value.
 #        dpi[] = kSysDefaultDpi;
@@ -548,21 +560,21 @@ end
 
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     global renderer, win, paused,game_started, cam
-    SDL_JL_Init()
+    SDL2.init()
     change_dir_if_bundle()
     init_prefspath()
     load_prefs_backup()
-    load_audio_files()
-    music = Mix_LoadMUS( "$assets/music.wav" );
+    #load_audio_files()
+    #music = Mix_LoadMUS( "$assets/music.wav" );
     win,renderer = makeWinRenderer()
     cam = Camera(WorldPos(0,0), winWidth_highDPI, winHeight_highDPI)
     global paused,game_started; paused[] = true; game_started[] = false;
     # Warm up
     for i in 1:10
         pollEvent!()
-        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255)
-        SDL_RenderClear(renderer)
-        SDL_RenderPresent(renderer)
+        SDL2.SetRenderDrawColor(renderer, 200, 200, 200, 255)
+        SDL2.RenderClear(renderer)
+        SDL2.RenderPresent(renderer)
         #sleep(0.01)
     end
     audioEnabled && Mix_PlayMusic( music, Int32(-1) )
