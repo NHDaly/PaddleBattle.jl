@@ -1,7 +1,5 @@
-#module PongMain
 println("Start")
 
-# TODO: RESIZING BROKE
 # TODO: why does it sometimers hang when you quit.
 #  - My _guess_ is it's when it's got a big queue of events that haven't been
 #  processed, but that could be unrelated.
@@ -17,9 +15,6 @@ println("Start")
 # TODO: first pause after winning+new game doesn't have a "continue" button.
 
 using SDL2
-#include("/Users/daly/.julia/v0.6/SDL2/src/SDL2.jl")
-
-const assets = "assets"
 
 # Override SDL libs locations if this script is being compiled for mac .app builds
 if get(ENV, "COMPILING_APPLE_BUNDLE", "false") == "true"
@@ -31,6 +26,8 @@ if get(ENV, "COMPILING_APPLE_BUNDLE", "false") == "true"
     eval(SDL2, :(libSDL2_mixer = "libSDL2_mixer.dylib"))
 end
 
+const assets = "assets"
+
 include("timing.jl")
 include("objects.jl")
 include("display.jl")
@@ -38,6 +35,7 @@ include("keyboard.jl")
 
 const kGAME_NAME = "Power Pong!"
 const kSAFE_GAME_NAME = "PowerPong"
+
 
 winWidth, winHeight = Int32(800), Int32(600)
 # minWinWidth = Int32(660)  # I'm not sure if we actually need one...
@@ -70,11 +68,11 @@ function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::
     #curPaused = paused[]
     ev = unsafe_load(event_ptr, 1)
     t = SDL2.Event(ev._Event[1])
-    if (t == SDL2.WINDOWEVENT)
+    if (t == SDL2.WindowEvent)
         #paused[] = true  # Stop game playing so resizing doesn't cause problems.
         event = unsafe_load( Ptr{SDL2.WindowEvent}(pointer_from_objref(ev)) )
         winevent = event.event;  # confusing, but that's what the field is called.
-        if (evtype == SDL2.WINDOWEVENT_RESIZED)
+        if (winevent == SDL2.WINDOWEVENT_RESIZED || winevent == SDL2.WINDOWEVENT_SIZE_CHANGED)
             winID = event.windowID
             eventWin = SDL2.GetWindowFromID(winID);
             if (eventWin == data_ptr)
@@ -631,5 +629,3 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
 end
 
 #julia_main([""])
-
-#end # module
