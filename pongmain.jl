@@ -25,9 +25,9 @@ if get(ENV, "COMPILING_APPLE_BUNDLE", "false") == "true"
     #  (note that you can still change these values b/c no functions have
     #  actually been called yet, and so the original constants haven't been
     #  "compiled in".)
-    const libSDL = "libSDL2.dylib"
-    const SDL2.ttf = "libSDL2_ttf.dylib"
-    const SDL2.mixer = "libSDL2_mixer.dylib"
+    eval(SDL2, :(libSDL2 = "libSDL2.dylib"))
+    eval(SDL2, :(libSDL2_ttf = "libSDL2_ttf.dylib"))
+    eval(SDL2, :(libSDL2_mixer = "libSDL2_mixer.dylib"))
 end
 
 include("timing.jl")
@@ -65,17 +65,16 @@ end
 # This huge function just handles resize events. I'm not sure why it needs to be
 # a callback instead of just the regular pollEvent..
 function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::Cint
-    global winWidth, winHeight, cam
-    event = unsafe_load(event_ptr, 1)
-    t = getEventType(event)
+    global winWidth, winHeight, cam #, paused
+    #curPaused = paused[]
+    ev = unsafe_load(event_ptr, 1)
+    t = SDL2.Event(ev._Event[1])
     if (t == SDL2.WINDOWEVENT)
-        paused = true  # Stop game playing so resizing doesn't cause problems.
-        e = event._Event
-        #evtype = SDL2.Event(event._Event[1])
-        #winEvent = UInt8(parse("0b"*join(map(bits,  e[13:-1:13]))))
-        winEvent = event._Event[13]
-        if (winEvent == SDL2.WINDOWEVENT_RESIZED)
-            winID = UInt32(parse("0b"*join(map(bits,  e[12:-1:9]))))
+        #paused[] = true  # Stop game playing so resizing doesn't cause problems.
+        event = unsafe_load( Ptr{SDL2.WindowEvent}(pointer_from_objref(ev)) )
+        winevent = event.event;  # confusing, but that's what the field is called.
+        if (evtype == SDL2.WINDOWEVENT_RESIZED)
+            winID = event.windowID
             eventWin = SDL2.GetWindowFromID(winID);
             if (eventWin == data_ptr)
                 w,h,w_highDPI,h_highDPI = getWindowSize(eventWin)
@@ -91,7 +90,7 @@ function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::
         # Note that window events pause the game, so at the end of any window
         # event, restart the timer so it doesn't have a HUGE frame.
         start!(timer)
-        paused = false  # Allow game to resume now that resizing is done.
+        #paused[] = curPaused  # Allow game to resume now that resizing is done.
     end
     return 0
 end
@@ -107,6 +106,16 @@ function getWindowSize(win)
     SDL2.GL_GetDrawableSize(win, w_highDPI, h_highDPI)
     return w[],h[],w_highDPI[],h_highDPI[]
 end
+
+# Having a QuitException is useful for testing, since an exception will simply
+# pause the interpreter. For release builds, the catch() block will call quitSDL().
+struct QuitException <: Exception end
+function quitSDL()
+    SDL2.Mix_CloseAudio()
+    SDL2.TTF_Quit()
+    SDL2.Quit()
+end
+
 
 renderer = win = nothing
 paddleSpeed = 1000
@@ -125,8 +134,8 @@ game_started = Ref(game_started_)
 playing_ = true
 playing = Ref(playing_)
 debugText = false
-#audioEnabled = true
-audioEnabled = false  # TODO: reenable audio once Mixer is supported!
+audioEnabled = true
+#audioEnabled = false  # TODO: reenable audio once Mixer is supported!
 last_10_frame_times = [1.]
 timer = Timer()
 i = 1
@@ -165,8 +174,9 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
         #sleep(0.01)
 
         if (playing[] == false)
-            SDL2.QuitAll()  # TODO: Add support for quit.
-            quit()
+            #SDL2.QuitAll()  # TODO: Add support for quit.
+            #quit()
+            throw(QuitException())
         end
 
         i += 1
@@ -178,8 +188,8 @@ function performUpdates!(scene, dt) end  # default
 
 function pollEvent!()
     #SDL2.Event() = [SDL2.Event(NTuple{56, Uint8}(zeros(56,1)))]
-    SDL2.Event() = Array{UInt8}(zeros(56))
-    e = SDL2.Event()
+    SDL_Event() = Array{UInt8}(zeros(56))
+    e = SDL_Event()
     success = (SDL2.PollEvent(e) != 0)
     return e,success
 end
@@ -208,7 +218,7 @@ function handleEvents!(scene::GameScene, e,t)
     global playing,paused
     # Handle Events
     if (t == SDL2.KEYDOWN || t == SDL2.KEYUP);  handleKeyPress(e,t);
-    elseif (t == SDL2.QUIT);  SDL2.Quit(); playing[] = false;
+    elseif (t == SDL2.QUIT);  playing[] = false;
     end
 
     if (paused[])
@@ -392,8 +402,8 @@ end
 function toggleAudio(enabled)
     global audioEnabled;
     audioEnabled = enabled;
-    if (audioEnabled) Mix_ResumeMusic()
-    else  Mix_PauseMusic()
+    if (audioEnabled) SDL2.Mix_ResumeMusic()
+    else  SDL2.Mix_PauseMusic()
     end
 end
 type PauseScene
@@ -434,7 +444,7 @@ function render(scene::PauseScene, renderer, win)
 end
 
 fonts = Dict()
-#font = TTF_OpenFont("../assets/fonts/Bitstream-Vera-Sans-Mono/VeraMono.ttf", 23)
+#font = SDL2.TTF_OpenFont("../assets/fonts/Bitstream-Vera-Sans-Mono/VeraMono.ttf", 23)
 function renderScore(renderer)
    txt = "Player 1: $scoreA     Player 2: $scoreB"
     renderText(renderer, cam, txt, UIPixelPos(screenCenterX(), 20))
@@ -446,28 +456,25 @@ function renderFPS(renderer,last_10_frame_times)
 end
 function renderText(renderer, cam::Camera, txt, pos::UIPixelPos
                      ; fontName = "$assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf", fontSize=26)
-   # TODO: put back fonts once supported!
-    return  # TODO undo this
-
    scale = worldScale(cam)
    fontSize = scale*fontSize
    fontKey = (fontName, fontSize)
    if haskey(fonts, fontKey)
        font = fonts[fontKey]
    else
-       font = TTF_OpenFont(fontKey...)
+       font = SDL2.TTF_OpenFont(fontKey...)
        fonts[fontKey] = font
    end
-   text = TTF_RenderText_Blended(font, txt, SDL2.Color(20,20,20,255))
+   text = SDL2.TTF_RenderText_Blended(font, txt, SDL2.Color(20,20,20,255))
    tex = SDL2.CreateTextureFromSurface(renderer,text)
 
    fx,fy = Cint[1], Cint[1]
-   TTF_SizeText(font, txt, pointer(fx), pointer(fy))
+   SDL2.TTF_SizeText(font, txt, pointer(fx), pointer(fy))
    fx,fy = fx[1],fy[1]
 
    screenPos = uiToScreen(pos, cam)
    SDL2.RenderCopy(renderer, tex, C_NULL, pointer_from_objref(SDL2.Rect(Int(floor(screenPos.x-fx/2.)), Int(floor(screenPos.y-fy/2.)),fx,fy)))
-   SDL2.FreeSurface(tex)
+   #SDL2.FreeSurface(tex)
 end
 
 clickedButton = nothing
@@ -530,9 +537,9 @@ function change_dir_if_bundle()
 end
 function load_audio_files()
     global pingSound, scoreSound, badKeySound
-    pingSound = Mix_LoadWAV( "$assets/ping.wav" );
-    scoreSound = Mix_LoadWAV( "$assets/score.wav" );
-    badKeySound = Mix_LoadWAV( "$assets/ping.wav" );
+    pingSound = SDL2.Mix_LoadWAV( "$assets/ping.wav" );
+    scoreSound = SDL2.Mix_LoadWAV( "$assets/score.wav" );
+    badKeySound = SDL2.Mix_LoadWAV( "$assets/ping.wav" );
 end
 #displayIndex = 0
 #function MySDL2.GetDisplayDPI(displayIndex)
@@ -560,31 +567,40 @@ end
 
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     global renderer, win, paused,game_started, cam
-    SDL2.init()
-    change_dir_if_bundle()
-    init_prefspath()
-    load_prefs_backup()
-    #load_audio_files()
-    #music = Mix_LoadMUS( "$assets/music.wav" );
-    win,renderer = makeWinRenderer()
-    cam = Camera(WorldPos(0,0), winWidth_highDPI, winHeight_highDPI)
-    global paused,game_started; paused[] = true; game_started[] = false;
-    # Warm up
-    for i in 1:10
-        pollEvent!()
-        SDL2.SetRenderDrawColor(renderer, 200, 200, 200, 255)
-        SDL2.RenderClear(renderer)
-        SDL2.RenderPresent(renderer)
-        #sleep(0.01)
+    try
+        SDL2.init()
+        change_dir_if_bundle()
+        init_prefspath()
+        load_prefs_backup()
+        load_audio_files()
+        music = SDL2.Mix_LoadMUS( "$assets/music.wav" );
+        win,renderer = makeWinRenderer()
+        cam = Camera(WorldPos(0,0), winWidth_highDPI, winHeight_highDPI)
+        global paused,game_started; paused[] = true; game_started[] = false;
+        # Warm up
+        for i in 1:10
+            pollEvent!()
+            SDL2.SetRenderDrawColor(renderer, 200, 200, 200, 255)
+            SDL2.RenderClear(renderer)
+            SDL2.RenderPresent(renderer)
+            #sleep(0.01)
+        end
+        audioEnabled && SDL2.Mix_PlayMusic( music, Int32(-1) )
+        recenterButtons!()
+        resetGame();  # Initialize game stuff.
+        playing[] = paused[] = true
+        scene = GameScene()
+        runSceneGameLoop(scene, renderer, win, playing)
+    catch e
+        if isa(e, QuitException)
+            quitSDL()
+        else
+            throw(e)  # Every other kind of exception
+        end
     end
-    audioEnabled && Mix_PlayMusic( music, Int32(-1) )
-    recenterButtons!()
-    resetGame();  # Initialize game stuff.
-    scene = GameScene()
-    runSceneGameLoop(scene, renderer, win, playing)
     return 0
 end
 
-# julia_main([""])
+#julia_main([""])
 
 #end # module

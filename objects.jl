@@ -47,7 +47,7 @@ function collide!(p::Paddle, b::Ball)
     end
     b.vel = Vector2D(b.vel.x * xSign + xIncr, -b.vel.y)
 
-    audioEnabled && Mix_PlayChannel( Int32(-1), pingSound, Int32(0) )
+    audioEnabled && SDL2.Mix_PlayChannel( Int32(-1), pingSound, Int32(0) )
 end
 
 struct Line
@@ -95,12 +95,12 @@ function update!(b::Ball, dt)
 
     if b.pos.y > winHeight/2.
         scoreB += 1
-        audioEnabled && Mix_PlayChannel( Int32(-1), scoreSound, Int32(0) )
+        audioEnabled && SDL2.Mix_PlayChannel( Int32(-1), scoreSound, Int32(0) )
         b.pos = WorldPos(0,0)
         b.vel = Vector2D(rand(-ballSpeed:ballSpeed), rand([ballSpeed,-ballSpeed]))
     elseif b.pos.y < -winHeight/2.
         scoreA += 1
-        audioEnabled && Mix_PlayChannel( Int32(-1), scoreSound, Int32(0) )
+        audioEnabled && SDL2.Mix_PlayChannel( Int32(-1), scoreSound, Int32(0) )
         b.pos = WorldPos(0,0)
         b.vel = Vector2D(rand(-ballSpeed:ballSpeed), rand([ballSpeed,-ballSpeed]))
     end

@@ -90,7 +90,7 @@ function tryChangingKeySettingButton(keyControl::Symbol, keySym)
     end
     if !haskey(keyDisplayNames, keySym)
         # If this isn't a valid key, error
-        audioEnabled && Mix_PlayChannel( Int32(-1), badKeySound, Int32(0) )
+        audioEnabled && SDL2.Mix_PlayChannel( Int32(-1), badKeySound, Int32(0) )
     elseif keySym in values(keySettings)
         #  or if it's already being used somewhere else, swap them.
         reverse_keySettings = Dict(value => key for (key, value) in keySettings)
