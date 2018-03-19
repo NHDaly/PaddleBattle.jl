@@ -1,6 +1,7 @@
 #module PongMain
 println("Start")
 
+# TODO: RESIZING BROKE
 # TODO: why does it sometimers hang when you quit.
 #  - My _guess_ is it's when it's got a big queue of events that haven't been
 #  processed, but that could be unrelated.
@@ -443,19 +444,27 @@ function render(scene::PauseScene, renderer, win)
     renderText(renderer, cam, "Theme music copyright http://www.freesfx.co.uk", UIPixelPos(screenCenterX(), winHeight - 10); fontSize=10)
 end
 
-fonts = Dict()
-#font = SDL2.TTF_OpenFont("../assets/fonts/Bitstream-Vera-Sans-Mono/VeraMono.ttf", 23)
 function renderScore(renderer)
-   txt = "Player 1: $scoreA     Player 2: $scoreB"
-    renderText(renderer, cam, txt, UIPixelPos(screenCenterX(), 20))
+    # Size the text with a single-digit score so it doesn't move when score hits double-digits.
+    txtW,_ = sizeText(renderer, cam, "Player 1: 0", "$assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf", 26)
+    gap=100
+    left1 = screenCenterX() - (txtW + txtW + gap)/2.0
+    left2 = left1 + txtW + gap
+    renderText(renderer, cam, "Player 1: $scoreA", UIPixelPos(left1, 20); align=leftJustified)
+    renderText(renderer, cam, "Player 2: $scoreB", UIPixelPos(left2, 20); align=leftJustified)
 end
 function renderFPS(renderer,last_10_frame_times)
     fps = Int(floor(1./mean(last_10_frame_times)))
     txt = "FPS: $fps"
     renderText(renderer, cam, txt, UIPixelPos(winWidth*1/5, 200))
 end
-function renderText(renderer, cam::Camera, txt, pos::UIPixelPos
-                     ; fontName = "$assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf", fontSize=26)
+
+fonts = Dict()
+function sizeText(renderer, cam, txt, fontName, fontSize)
+   _, fw, fh = createText(renderer, cam, txt, fontName, fontSize)
+   return fw,fh
+end
+function createText(renderer, cam, txt, fontName, fontSize)
    scale = worldScale(cam)
    fontSize = scale*fontSize
    fontKey = (fontName, fontSize)
@@ -468,12 +477,32 @@ function renderText(renderer, cam::Camera, txt, pos::UIPixelPos
    text = SDL2.TTF_RenderText_Blended(font, txt, SDL2.Color(20,20,20,255))
    tex = SDL2.CreateTextureFromSurface(renderer,text)
 
-   fx,fy = Cint[1], Cint[1]
-   SDL2.TTF_SizeText(font, txt, pointer(fx), pointer(fy))
-   fx,fy = fx[1],fy[1]
+   fw,fh = Cint[1], Cint[1]
+   SDL2.TTF_SizeText(font, txt, pointer(fw), pointer(fh))
+   fw,fh = fw[1],fh[1]
 
+   return tex, fw, fh
+end
+@enum TextAlign centered leftJustified rightJustified
+function renderText(renderer, cam::Camera, txt, pos::UIPixelPos
+                    ; fontName = "$assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf",
+                     fontSize=26, align::TextAlign = centered)
+   tex, fw, fh = createText(renderer, cam, txt, fontName, fontSize)
+   renderTextSurface(renderer, cam, pos, tex, fw, fh, align)
+end
+
+function renderTextSurface(renderer, cam::Camera, pos::UIPixelPos,
+                           tex::Ptr{SDL2.Texture}, fw::Integer, fh::Integer, align::TextAlign)
    screenPos = uiToScreen(pos, cam)
-   SDL2.RenderCopy(renderer, tex, C_NULL, pointer_from_objref(SDL2.Rect(Int(floor(screenPos.x-fx/2.)), Int(floor(screenPos.y-fy/2.)),fx,fy)))
+   renderPos = SDL2.Rect(0,0,0,0)
+   if align == centered
+       renderPos = SDL2.Rect(Int(floor(screenPos.x-fw/2.)), Int(floor(screenPos.y-fh/2.)), fw,fh)
+   elseif align == leftJustified
+       renderPos = SDL2.Rect(Int(floor(screenPos.x)), Int(floor(screenPos.y-fh/2.)), fw,fh)
+   else # align == rightJustified
+       renderPos = SDL2.Rect(Int(floor(screenPos.x-fw)), Int(floor(screenPos.y-fh/2.)), ffwfh)
+   end
+   SDL2.RenderCopy(renderer, tex, C_NULL, pointer_from_objref(renderPos))
    #SDL2.FreeSurface(tex)
 end
 
