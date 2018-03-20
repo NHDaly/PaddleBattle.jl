@@ -1,6 +1,6 @@
 println("Start")
 
-# TODO: why does it sometimers hang when you quit.
+# TODO: why does it sometimes hang when you quit.
 #  - My _guess_ is it's when it's got a big queue of events that haven't been
 #  processed, but that could be unrelated.
 #   - this doesn't really make sense: the music stops immediately so it's
@@ -48,7 +48,7 @@ function makeWinRenderer()
         #UInt32(SDL2.WINDOWPOS_CENTERED()), UInt32(SDL2.WINDOWPOS_CENTERED()), winWidth, winHeight,
         Int32(0), Int32(0), winWidth, winHeight,
         UInt32(SDL2.WINDOW_ALLOW_HIGHDPI|SDL2.WINDOW_OPENGL|SDL2.WINDOW_RESIZABLE|SDL2.WINDOW_SHOWN));
-    SDL2.AddEventWatch(cfunction(resizingEventWatcher, Cint, Tuple{Ptr{Void}, Ptr{SDL2.Event}}), win);
+    SDL2.AddEventWatch(cfunction(windowEventWatcher, Cint, Tuple{Ptr{Void}, Ptr{SDL2.Event}}), win);
 
     # Find out how big the created window actually was (depends on the system):
     winWidth, winHeight, winWidth_highDPI, winHeight_highDPI = getWindowSize(win)
@@ -62,9 +62,8 @@ end
 
 # This huge function just handles resize events. I'm not sure why it needs to be
 # a callback instead of just the regular pollEvent..
-function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::Cint
-    global winWidth, winHeight, cam #, paused
-    #curPaused = paused[]
+function windowEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::Cint
+    global winWidth, winHeight, cam, window_paused
     ev = unsafe_load(event_ptr, 1)
     t = UInt32(0)
     for x in ev._Event[4:-1:1]
@@ -73,10 +72,11 @@ function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::
     end
     t = SDL2.Event(t)
     if (t == SDL2.WindowEvent)
-        #paused[] = true  # Stop game playing so resizing doesn't cause problems.
         event = unsafe_load( Ptr{SDL2.WindowEvent}(pointer_from_objref(ev)) )
         winevent = event.event;  # confusing, but that's what the field is called.
         if (winevent == SDL2.WINDOWEVENT_RESIZED || winevent == SDL2.WINDOWEVENT_SIZE_CHANGED)
+            curPaused = window_paused[]
+            window_paused[] = true  # Stop game playing so resizing doesn't cause problems.
             winID = event.windowID
             eventWin = SDL2.GetWindowFromID(winID);
             if (eventWin == data_ptr)
@@ -89,11 +89,15 @@ function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::
                 cam.w, cam.h = winWidth_highDPI, winHeight_highDPI
                 recenterButtons!()
             end
+            window_paused[] = curPaused  # Allow game to resume now that resizing is done.
+        elseif (winevent == SDL2.WINDOWEVENT_FOCUS_LOST || winevent == SDL2.WINDOWEVENT_HIDDEN || winevent == SDL2.WINDOWEVENT_MINIMIZED)
+            window_paused[] = true  # Stop game playing so resizing doesn't cause problems.
+        elseif (winevent == SDL2.WINDOWEVENT_FOCUS_GAINED || winevent == SDL2.WINDOWEVENT_SHOWN)
+            window_paused[] = false
         end
         # Note that window events pause the game, so at the end of any window
         # event, restart the timer so it doesn't have a HUGE frame.
         start!(timer)
-        #paused[] = curPaused  # Allow game to resume now that resizing is done.
     end
     return 0
 end
@@ -132,6 +136,8 @@ scoreB = 0
 winningScore = 11
 paused_ = true # start paused to show the initial menu.
 paused = Ref(paused_)
+window_paused_ = false # Whether or not the game should be running (if lost focus)
+window_paused = Ref(window_paused_)
 game_started_ = true # start paused to show the initial menu.
 game_started = Ref(game_started_)
 playing_ = true
@@ -149,6 +155,12 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
     push!(sceneStack, scene)
     start!(timer)
     while (inSceneVar[])
+        # Don't run if game is paused by system (resizing, lost focus, etc)
+        while window_paused[]  # Note that this will be fixed by windowEventWatcher
+            _ = pollEvent!()
+            sleep(0.1)
+        end
+
         # Handle Events
         hadEvents = true
         while hadEvents
