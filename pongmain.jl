@@ -12,7 +12,6 @@ println("Start")
 # *think* _this_ is because of having a huge queue of unhandle events. It seems
 # to happen when the app is inactive for a while (like if it's maximized in a
 # different desktop)
-# TODO: first pause after winning+new game doesn't have a "continue" button.
 
 using SDL2
 
@@ -46,16 +45,16 @@ function makeWinRenderer()
     #win = SDL2.CreateWindow("Hello World!", Int32(100), Int32(100), winWidth, winHeight, UInt32(SDL2.WINDOW_SHOWN))
 
     win = SDL2.CreateWindow(kGAME_NAME,
-        #Int32(SDL2.WINDOWPOS_CENTERED()), Int32(SDL2.WINDOWPOS_CENTERED()), winWidth, winHeight,
+        #UInt32(SDL2.WINDOWPOS_CENTERED()), UInt32(SDL2.WINDOWPOS_CENTERED()), winWidth, winHeight,
         Int32(0), Int32(0), winWidth, winHeight,
-        Int32(SDL2.WINDOW_ALLOW_HIGHDPI|SDL2.WINDOW_OPENGL|SDL2.WINDOW_RESIZABLE|SDL2.WINDOW_SHOWN));
+        UInt32(SDL2.WINDOW_ALLOW_HIGHDPI|SDL2.WINDOW_OPENGL|SDL2.WINDOW_RESIZABLE|SDL2.WINDOW_SHOWN));
     SDL2.AddEventWatch(cfunction(resizingEventWatcher, Cint, Tuple{Ptr{Void}, Ptr{SDL2.Event}}), win);
 
     # Find out how big the created window actually was (depends on the system):
     winWidth, winHeight, winWidth_highDPI, winHeight_highDPI = getWindowSize(win)
     #cam.w, cam.h = winWidth_highDPI, winHeight_highDPI
 
-    renderer = SDL2.CreateRenderer(win, Int32(-1), Int32(SDL2.RENDERER_ACCELERATED | SDL2.RENDERER_PRESENTVSYNC))
+    renderer = SDL2.CreateRenderer(win, Int32(-1), UInt32(SDL2.RENDERER_ACCELERATED | SDL2.RENDERER_PRESENTVSYNC))
     SDL2.SetRenderDrawBlendMode(renderer, UInt32(SDL2.BLENDMODE_BLEND))
     #renderer = SDL2.CreateRenderer(win, Int32(-1), Int32(0))
     return win,renderer
@@ -67,7 +66,12 @@ function resizingEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::
     global winWidth, winHeight, cam #, paused
     #curPaused = paused[]
     ev = unsafe_load(event_ptr, 1)
-    t = SDL2.Event(ev._Event[1])
+    t = UInt32(0)
+    for x in ev._Event[4:-1:1]
+        t = t << sizeof(x)*8
+        t |= x
+    end
+    t = SDL2.Event(t)
     if (t == SDL2.WindowEvent)
         #paused[] = true  # Stop game playing so resizing doesn't cause problems.
         event = unsafe_load( Ptr{SDL2.WindowEvent}(pointer_from_objref(ev)) )
@@ -224,8 +228,6 @@ function handleEvents!(scene::GameScene, e,t)
          pause!(timer)
          enterPauseGameLoop(renderer,win)
          unpause!(timer)
-         buttons[:bRestart].enabled = true # After starting game, enable "New Game"
-         buttons[:bNewContinue].text = "Continue" # After starting game
     end
 end
 
@@ -349,7 +351,11 @@ buttons = Dict([
     :bNewContinue =>
         Button(true, UIPixelPos(0,0), 200, 30, "New Game", 20,
                kMainButtonColor,
-               ()->(global paused,game_started; paused[] = false; game_started[] = true;))
+               ()->(global paused,game_started,buttons;
+                    paused[] = false; game_started[] = true;
+                    buttons[:bNewContinue].text = "Continue"; # After starting game
+                    buttons[:bRestart].enabled = true;        # After starting game
+                    ))
     :bSoundToggle =>
         CheckboxButton(true,
             Button(true, UIPixelPos(0,0), 200, 30, "Sound on/off", 20,
