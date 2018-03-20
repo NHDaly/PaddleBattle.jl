@@ -14,21 +14,21 @@ UIPixelPos(x::Number, y::Number) = UIPixelPos(convert.(Int, floor.((x,y)))...)
 
 mutable struct Camera
     pos::WorldPos
-    w::Int
-    h::Int
+    w::Threads.Atomic{Int32}   # Note: These are Atomics, since they can be modified by the
+    h::Threads.Atomic{Int32}   # windowEventWatcher callback, which can run in another thread!
 end
 Camera() = Camera(WorldPos(0,0),100,100)
 
-screenCenter() = UIPixelPos(winWidth/2, winHeight/2)
-screenCenterX() = winWidth/2
-screenCenterY() = winHeight/2
+screenCenter() = UIPixelPos(winWidth[]/2, winHeight[]/2)
+screenCenterX() = winWidth[]/2
+screenCenterY() = winHeight[]/2
 screenOffsetFromCenter(x::Int,y::Int) = UIPixelPos(screenCenterX()+x,screenCenterY()+y)
 
-worldScale(c::Camera) = cam.w / winWidth;
+worldScale(c::Camera) = cam.w[] / winWidth[];
 function worldToScreen(p::WorldPos, c::Camera)
     scale = worldScale(c)
     ScreenPixelPos(
-        floor(c.w/2. + scale*p.x), floor(c.h/2. - scale*p.y))
+        floor(c.w[]/2. + scale*p.x), floor(c.h[]/2. - scale*p.y))
 end
 function uiToScreen(p::UIPixelPos, c::Camera)
     scale = worldScale(c)

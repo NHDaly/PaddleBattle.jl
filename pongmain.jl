@@ -35,24 +35,25 @@ include("keyboard.jl")
 const kGAME_NAME = "Power Pong!"
 const kSAFE_GAME_NAME = "PowerPong"
 
-
-winWidth, winHeight = Int32(800), Int32(600)
+# Note: These are all Atomics, since they can be modified by the
+# windowEventWatcher callback, which can run in another thread!
+winWidth, winHeight = Threads.Atomic{Int32}(800), Threads.Atomic{Int32}(600)
 # minWinWidth = Int32(660)  # I'm not sure if we actually need one...
 minWinHeight = Int32(425)  # Prevent getting any smaller than this.
-winWidth_highDPI, winHeight_highDPI = Int32(800), Int32(600)
+winWidth_highDPI, winHeight_highDPI = Threads.Atomic{Int32}(800), Threads.Atomic{Int32}(600)
 function makeWinRenderer()
     global winWidth, winHeight, winWidth_highDPI, winHeight_highDPI
     #win = SDL2.CreateWindow("Hello World!", Int32(100), Int32(100), winWidth, winHeight, UInt32(SDL2.WINDOW_SHOWN))
 
     win = SDL2.CreateWindow(kGAME_NAME,
         #UInt32(SDL2.WINDOWPOS_CENTERED()), UInt32(SDL2.WINDOWPOS_CENTERED()), winWidth, winHeight,
-        Int32(0), Int32(0), winWidth, winHeight,
+        Int32(0), Int32(0), winWidth[], winHeight[],
         UInt32(SDL2.WINDOW_ALLOW_HIGHDPI|SDL2.WINDOW_OPENGL|SDL2.WINDOW_RESIZABLE|SDL2.WINDOW_SHOWN));
     SDL2.AddEventWatch(cfunction(windowEventWatcher, Cint, Tuple{Ptr{Void}, Ptr{SDL2.Event}}), win);
 
     # Find out how big the created window actually was (depends on the system):
-    winWidth, winHeight, winWidth_highDPI, winHeight_highDPI = getWindowSize(win)
-    #cam.w, cam.h = winWidth_highDPI, winHeight_highDPI
+    winWidth[], winHeight[], winWidth_highDPI[], winHeight_highDPI[] = getWindowSize(win)
+    #cam.w[], cam.h[] = winWidth_highDPI, winHeight_highDPI
 
     renderer = SDL2.CreateRenderer(win, Int32(-1), UInt32(SDL2.RENDERER_ACCELERATED | SDL2.RENDERER_PRESENTVSYNC))
     SDL2.SetRenderDrawBlendMode(renderer, UInt32(SDL2.BLENDMODE_BLEND))
@@ -76,7 +77,7 @@ function windowEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::Ci
         winevent = event.event;  # confusing, but that's what the field is called.
         if (winevent == SDL2.WINDOWEVENT_RESIZED || winevent == SDL2.WINDOWEVENT_SIZE_CHANGED)
             curPaused = window_paused[]
-            window_paused[] = true  # Stop game playing so resizing doesn't cause problems.
+            window_paused[] = 1  # Stop game playing so resizing doesn't cause problems.
             winID = event.windowID
             eventWin = SDL2.GetWindowFromID(winID);
             if (eventWin == data_ptr)
@@ -84,16 +85,16 @@ function windowEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::Ci
                 if h < minWinHeight
                     w,h,w_highDPI,h_highDPI = resizeWindow(eventWin, w, minWinHeight)
                 end
-                winWidth, winHeight = w, h
-                winWidth_highDPI, winHeight_highDPI = w_highDPI, h_highDPI
-                cam.w, cam.h = winWidth_highDPI, winHeight_highDPI
+                winWidth[], winHeight[] = w, h
+                winWidth_highDPI[], winHeight_highDPI[] = w_highDPI, h_highDPI
+                cam.w[], cam.h[] = winWidth_highDPI[], winHeight_highDPI[]
                 recenterButtons!()
             end
             window_paused[] = curPaused  # Allow game to resume now that resizing is done.
         elseif (winevent == SDL2.WINDOWEVENT_FOCUS_LOST || winevent == SDL2.WINDOWEVENT_HIDDEN || winevent == SDL2.WINDOWEVENT_MINIMIZED)
-            window_paused[] = true  # Stop game playing so resizing doesn't cause problems.
+            window_paused[] = 1  # Stop game playing so resizing doesn't cause problems.
         elseif (winevent == SDL2.WINDOWEVENT_FOCUS_GAINED || winevent == SDL2.WINDOWEVENT_SHOWN)
-            window_paused[] = false
+            window_paused[] = 0
         end
         # Note that window events pause the game, so at the end of any window
         # event, restart the timer so it doesn't have a HUGE frame.
@@ -136,8 +137,7 @@ scoreB = 0
 winningScore = 11
 paused_ = true # start paused to show the initial menu.
 paused = Ref(paused_)
-window_paused_ = false # Whether or not the game should be running (if lost focus)
-window_paused = Ref(window_paused_)
+window_paused = Threads.Atomic{UInt8}(0) # Whether or not the game should be running (if lost focus)
 game_started_ = true # start paused to show the initial menu.
 game_started = Ref(game_started_)
 playing_ = true
@@ -156,7 +156,7 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
     start!(timer)
     while (inSceneVar[])
         # Don't run if game is paused by system (resizing, lost focus, etc)
-        while window_paused[]  # Note that this will be fixed by windowEventWatcher
+        while window_paused[] != 0  # Note that this will be fixed by windowEventWatcher
             _ = pollEvent!()
             sleep(0.1)
         end
@@ -295,7 +295,7 @@ function enterWinnerGameLoop(renderer,win, winnerName)
 
     # Move the ball off-screen here so it doesn't show up on the winning
     # player screen.
-    ball.pos = WorldPos(winWidth + 20, 0);
+    ball.pos = WorldPos(winWidth[] + 20, 0);
 
     scene = PauseScene("$winnerName wins!!", "")
     runSceneGameLoop(scene, renderer, win, paused)
@@ -410,11 +410,11 @@ function recenterButtons!()
     buttons[:bNewContinue].pos = screenOffsetFromCenter(0,56)
     buttons[:bSoundToggle].button.pos = screenOffsetFromCenter(0,90)
     buttons[:bQuit].pos        = screenOffsetFromCenter(0,124)
-    buttons[:keyALeft].pos    = UIPixelPos(paddleAControlsX(), winHeight-90)
-    buttons[:keyARight].pos   = UIPixelPos(paddleAControlsX(), winHeight-65)
-    buttons[:keyBLeft].pos    = UIPixelPos(paddleBControlsX(), winHeight-90)
-    buttons[:keyBRight].pos   = UIPixelPos(paddleBControlsX(), winHeight-65)
-    buttons[:bResetDefaultKeys].pos   = UIPixelPos(screenCenterX(), winHeight-55)
+    buttons[:keyALeft].pos    = UIPixelPos(paddleAControlsX(), winHeight[]-90)
+    buttons[:keyARight].pos   = UIPixelPos(paddleAControlsX(), winHeight[]-65)
+    buttons[:keyBLeft].pos    = UIPixelPos(paddleBControlsX(), winHeight[]-90)
+    buttons[:keyBRight].pos   = UIPixelPos(paddleBControlsX(), winHeight[]-65)
+    buttons[:bResetDefaultKeys].pos   = UIPixelPos(screenCenterX(), winHeight[]-55)
 end
 function toggleAudio(enabled)
     global audioEnabled;
@@ -445,7 +445,7 @@ function handleEvents!(scene::PauseScene, e,t)
 end
 
 function render(scene::PauseScene, renderer, win)
-    screenRect = SDL2.Rect(0,0, cam.w, cam.h)
+    screenRect = SDL2.Rect(0,0, cam.w[], cam.h[])
     # First render the scene under the pause menu so it looks like the pause is over it.
     if (length(sceneStack) > 1) render(sceneStack[end-1], renderer, win) end
     SDL2.SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
@@ -455,9 +455,9 @@ function render(scene::PauseScene, renderer, win)
     for b in values(buttons)
         render(b, cam, renderer)
     end
-    renderText(renderer, cam, "Player 1 Controls", UIPixelPos(paddleAControlsX(),winHeight-115); fontSize = 15)
-    renderText(renderer, cam, "Player 2 Controls", UIPixelPos(paddleBControlsX(),winHeight-115); fontSize = 15)
-    renderText(renderer, cam, "Theme music copyright http://www.freesfx.co.uk", UIPixelPos(screenCenterX(), winHeight - 10); fontSize=10)
+    renderText(renderer, cam, "Player 1 Controls", UIPixelPos(paddleAControlsX(),winHeight[]-115); fontSize = 15)
+    renderText(renderer, cam, "Player 2 Controls", UIPixelPos(paddleBControlsX(),winHeight[]-115); fontSize = 15)
+    renderText(renderer, cam, "Theme music copyright http://www.freesfx.co.uk", UIPixelPos(screenCenterX(), winHeight[] - 10); fontSize=10)
 end
 
 function renderScore(renderer)
@@ -472,7 +472,7 @@ end
 function renderFPS(renderer,last_10_frame_times)
     fps = Int(floor(1./mean(last_10_frame_times)))
     txt = "FPS: $fps"
-    renderText(renderer, cam, txt, UIPixelPos(winWidth*1/5, 200))
+    renderText(renderer, cam, txt, UIPixelPos(winWidth[]*1/5, 200))
 end
 
 fonts = Dict()
@@ -621,7 +621,9 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
         load_audio_files()
         music = SDL2.Mix_LoadMUS( "$assets/music.wav" );
         win,renderer = makeWinRenderer()
-        cam = Camera(WorldPos(0,0), winWidth_highDPI, winHeight_highDPI)
+        cam = Camera(WorldPos(0,0),
+                     Threads.Atomic{Int32}(winWidth_highDPI[]),
+                     Threads.Atomic{Int32}(winHeight_highDPI[]))
         global paused,game_started; paused[] = true; game_started[] = false;
         # Warm up
         for i in 1:10

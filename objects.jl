@@ -93,20 +93,20 @@ function update!(b::Ball, dt)
     global scoreA, scoreB
     b.pos = b.pos + (b.vel * dt)
 
-    if b.pos.y > winHeight/2.
+    if b.pos.y > winHeight[]/2.
         scoreB += 1
         audioEnabled && SDL2.Mix_PlayChannel( Int32(-1), scoreSound, Int32(0) )
         b.pos = WorldPos(0,0)
         b.vel = Vector2D(rand(-ballSpeed:ballSpeed), rand([ballSpeed,-ballSpeed]))
-    elseif b.pos.y < -winHeight/2.
+    elseif b.pos.y < -winHeight[]/2.
         scoreA += 1
         audioEnabled && SDL2.Mix_PlayChannel( Int32(-1), scoreSound, Int32(0) )
         b.pos = WorldPos(0,0)
         b.vel = Vector2D(rand(-ballSpeed:ballSpeed), rand([ballSpeed,-ballSpeed]))
     end
-    if b.pos.x > winWidth/2.
+    if b.pos.x > winWidth[]/2.
         b.vel = Vector2D(-abs(b.vel.x), b.vel.y)
-    elseif b.pos.x < -winWidth/2.
+    elseif b.pos.x < -winWidth[]/2.
         b.vel = Vector2D(abs(b.vel.x), b.vel.y)
     end
 end
@@ -117,9 +117,9 @@ function update!(p::Paddle, keys, dt)
     if (keys.rightDown)
         p.pos = WorldPos(p.pos.x + (paddleSpeed * dt), p.pos.y)
     end
-    if p.pos.x > winWidth/2.
-        p.pos = WorldPos(winWidth/2., p.pos.y)
-    elseif p.pos.x < -winWidth/2.
-        p.pos = WorldPos(-winWidth/2., p.pos.y)
+    if p.pos.x > winWidth[]/2.
+        p.pos = WorldPos(winWidth[]/2., p.pos.y)
+    elseif p.pos.x < -winWidth[]/2.
+        p.pos = WorldPos(-winWidth[]/2., p.pos.y)
     end
 end
