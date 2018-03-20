@@ -460,7 +460,8 @@ end
 fonts = Dict()
 function sizeText(renderer, cam, txt, fontName, fontSize)
    _, fw, fh = createText(renderer, cam, txt, fontName, fontSize)
-   return fw,fh
+   scale = worldScale(cam)
+   return fw/scale, fh/scale
 end
 function createText(renderer, cam, txt, fontName, fontSize)
    scale = worldScale(cam)
@@ -498,7 +499,7 @@ function renderTextSurface(renderer, cam::Camera, pos::UIPixelPos,
    elseif align == leftJustified
        renderPos = SDL2.Rect(Int(floor(screenPos.x)), Int(floor(screenPos.y-fh/2.)), fw,fh)
    else # align == rightJustified
-       renderPos = SDL2.Rect(Int(floor(screenPos.x-fw)), Int(floor(screenPos.y-fh/2.)), ffwfh)
+       renderPos = SDL2.Rect(Int(floor(screenPos.x-fw)), Int(floor(screenPos.y-fh/2.)), fw,fh)
    end
    SDL2.RenderCopy(renderer, tex, C_NULL, pointer_from_objref(renderPos))
    #SDL2.FreeSurface(tex)
