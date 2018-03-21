@@ -128,9 +128,13 @@ end
 
 renderer = win = nothing
 paddleSpeed = 1000
+paddleTimeToMaxSpeed = 0.15
+paddleTimeToDecelerate = 0.05
+paddleAccel = paddleSpeed/paddleTimeToMaxSpeed
+paddleDeccel = paddleSpeed/paddleTimeToDecelerate
 ballSpeed = 350
-paddleA = Paddle(WorldPos(0,200),200)
-paddleB = Paddle(WorldPos(0,-200),200)
+paddleA = Paddle(WorldPos(0,200), Vector2D(0,0), 200)
+paddleB = Paddle(WorldPos(0,-200), Vector2D(0,0), 200)
 ball = Ball(WorldPos(0,0), Vector2D(0,-ballSpeed))
 cam = nothing
 scoreA = 0

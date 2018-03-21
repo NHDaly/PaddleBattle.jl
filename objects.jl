@@ -29,6 +29,7 @@ mutable struct Ball
 end
 mutable struct Paddle
     pos::WorldPos
+    vel::Vector2D
     length
 end
 
@@ -111,12 +112,58 @@ function update!(b::Ball, dt)
     end
 end
 function update!(p::Paddle, keys, dt)
-    if (keys.leftDown)
-        p.pos = WorldPos(p.pos.x - (paddleSpeed * dt), p.pos.y)
+    # Apply velocity
+    p.pos = p.pos + (p.vel * dt)
+
+    # TODO: another way i could calculate this, which might give more control is
+    # to set the position manually as a function of how long they've been
+    # holding the button. That way, if I want, i could implement normal
+    # acceleration as I've done here, but OR if i want, i could also do like t^3
+    # instead of t^2 to make it more dramatic or something.
+
+    # Calculate acceleration from user input.
+    accel = 0
+    decelerating = false  # keep track of whether speeding up or slowing down.
+    cur_vel_sign = 0
+    # If both keys are down or neither key is down, decelerate.
+    if (!xor(keys.leftDown, keys.rightDown))
+        if abs(p.vel.x) > 0
+            cur_vel_sign = p.vel.x / abs(p.vel.x)
+            accel = paddleDeccel * -1 * cur_vel_sign
+            decelerating = true
+        end
+    elseif (keys.leftDown)
+        accel = -paddleAccel
+        # Boost if switching directions
+        if p.vel.x > 0;
+            accel += -paddleDeccel
+        end
+    elseif (keys.rightDown)
+        accel = paddleAccel
+        # Boost if switching directions
+        if p.vel.x < 0;
+            accel += paddleDeccel
+        end
     end
-    if (keys.rightDown)
-        p.pos = WorldPos(p.pos.x + (paddleSpeed * dt), p.pos.y)
+
+    # Apply accel
+    p.vel = p.vel .+ Vector2D(accel * dt, 0)
+    if decelerating
+        # If decelerating pushed it "past" 0, bring it to a stop.
+        if (cur_vel_sign < 0 && p.vel.x > 0
+           || cur_vel_sign > 0 && p.vel.x < 0)
+            p.vel = Vector2D(0, p.vel.y)
+        end
+    else
+        # If accelerating pushed it past max, bring it to a stop.
+        if p.vel.x > paddleSpeed
+            p.vel = Vector2D(paddleSpeed, p.vel.y)
+        elseif p.vel.x < -paddleSpeed
+            p.vel = Vector2D(-paddleSpeed, p.vel.y)
+        end
     end
+
+    # Check position bounds.
     if p.pos.x > winWidth[]/2.
         p.pos = WorldPos(winWidth[]/2., p.pos.y)
     elseif p.pos.x < -winWidth[]/2.
