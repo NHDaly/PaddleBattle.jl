@@ -508,7 +508,7 @@ function createText(renderer, cam, txt, fontName, fontSize)
    else
        text = SDL2.TTF_RenderText_Blended(font, txt, SDL2.Color(20,20,20,255))
        tex = SDL2.CreateTextureFromSurface(renderer,text)
-       SDL2.FreeSurface(text)
+       #SDL2.FreeSurface(text)
        txt_cache[txtKey] = tex
    end
 
