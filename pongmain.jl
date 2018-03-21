@@ -48,8 +48,7 @@ function makeWinRenderer()
     #win = SDL2.CreateWindow("Hello World!", Int32(100), Int32(100), winWidth, winHeight, UInt32(SDL2.WINDOW_SHOWN))
 
     win = SDL2.CreateWindow(kGAME_NAME,
-        #UInt32(SDL2.WINDOWPOS_CENTERED()), UInt32(SDL2.WINDOWPOS_CENTERED()), winWidth, winHeight,
-        Int32(0), Int32(0), winWidth[], winHeight[],
+        Int32(SDL2.WINDOWPOS_CENTERED()), Int32(SDL2.WINDOWPOS_CENTERED()), winWidth[], winHeight[],
         UInt32(SDL2.WINDOW_ALLOW_HIGHDPI|SDL2.WINDOW_OPENGL|SDL2.WINDOW_RESIZABLE|SDL2.WINDOW_SHOWN));
     SDL2.SetWindowMinimumSize(win, minWinWidth, minWinHeight)
     SDL2.AddEventWatch(cfunction(windowEventWatcher, Cint, Tuple{Ptr{Void}, Ptr{SDL2.Event}}), win);
@@ -632,7 +631,7 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
                      Threads.Atomic{Int32}(winHeight_highDPI[]))
         global paused,game_started; paused[] = true; game_started[] = false;
         # Warm up
-        for i in 1:10
+        for i in 1:3
             pollEvent!()
             SDL2.SetRenderDrawColor(renderer, 200, 200, 200, 255)
             SDL2.RenderClear(renderer)
