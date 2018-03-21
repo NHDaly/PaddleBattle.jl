@@ -44,7 +44,6 @@ winWidth_highDPI, winHeight_highDPI = Threads.Atomic{Int32}(800), Threads.Atomic
 resize_draw_timer = Timer()
 function makeWinRenderer()
     global winWidth, winHeight, winWidth_highDPI, winHeight_highDPI
-    #win = SDL2.CreateWindow("Hello World!", Int32(100), Int32(100), winWidth, winHeight, UInt32(SDL2.WINDOW_SHOWN))
 
     win = SDL2.CreateWindow(kGAME_NAME,
         Int32(SDL2.WINDOWPOS_CENTERED()), Int32(SDL2.WINDOWPOS_CENTERED()), winWidth[], winHeight[],
@@ -59,7 +58,6 @@ function makeWinRenderer()
 
     renderer = SDL2.CreateRenderer(win, Int32(-1), UInt32(SDL2.RENDERER_ACCELERATED | SDL2.RENDERER_PRESENTVSYNC))
     SDL2.SetRenderDrawBlendMode(renderer, UInt32(SDL2.BLENDMODE_BLEND))
-    #renderer = SDL2.CreateRenderer(win, Int32(-1), Int32(0))
     return win,renderer
 end
 
@@ -147,7 +145,6 @@ playing_ = true
 playing = Ref(playing_)
 debugText = false
 audioEnabled = true
-#audioEnabled = false  # TODO: reenable audio once Mixer is supported!
 last_10_frame_times = [1.]
 timer = Timer()
 i = 1
@@ -192,8 +189,6 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
         #sleep(0.01)
 
         if (playing[] == false)
-            #SDL2.QuitAll()  # TODO: Add support for quit.
-            #quit()
             throw(QuitException())
         end
 
@@ -519,7 +514,7 @@ function createText(renderer, cam, txt, fontName, fontSize)
    return tex, fw, fh
 end
 @enum TextAlign centered leftJustified rightJustified
-function renderText(renderer, cam::Camera, txt, pos::UIPixelPos
+function renderText(renderer, cam::Camera, txt::String, pos::UIPixelPos
                     ; fontName = "$assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf",
                      fontSize=26, align::TextAlign = centered)
    tex, fw, fh = createText(renderer, cam, txt, fontName, fontSize)
@@ -538,15 +533,12 @@ function renderTextSurface(renderer, cam::Camera, pos::UIPixelPos,
        renderPos = SDL2.Rect(Int(floor(screenPos.x-fw)), Int(floor(screenPos.y-fh/2.)), fw,fh)
    end
    SDL2.RenderCopy(renderer, tex, C_NULL, pointer_from_objref(renderPos))
-   #SDL2.FreeSurface(tex)
+   #SDL2.DestroyTexture(tex)
 end
 
 clickedButton = nothing
-gEvent = nothing
-e = gEvent
 function handleMouseClickButton!(e, clickType)
-    global gEvent,clickedButton
-    gEvent = e
+    global clickedButton
     mx = Int64(parse("0b"*join(map(bits,  e[24:-1:21]))));
     my = Int64(parse("0b"*join(map(bits,  e[28:-1:25]))));
     didClickButton = false
@@ -605,29 +597,6 @@ function load_audio_files()
     scoreSound = SDL2.Mix_LoadWAV( "$assets/score.wav" );
     badKeySound = SDL2.Mix_LoadWAV( "$assets/ping.wav" );
 end
-#displayIndex = 0
-#function MySDL2.GetDisplayDPI(displayIndex)
-#    const kSysDefaultDpi =
-#        if is_apple()
-#            Cfloat(72.0)
-#        elseif is_windows()
-#            Cfloat(96.0)
-#        else
-#            error("No system default DPI set for this platform.");
-#        end
-#
-#    dpi = Cfloat[0.0]
-#    hdpi = Cfloat[0.0]
-#    vdpi = Cfloat[0.0]
-#    succ = SDL2.GetDisplayDPI(Int32(0), dpi, hdpi, vdpi)
-#    if (succ != 0)
-#        # Failed to get DPI, so just return the default value.
-#        dpi[] = kSysDefaultDpi;
-#    end
-#    dpi[]
-#    hdpi[]
-#    vdpi[]
-#end
 
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     global renderer, win, paused,game_started, cam
