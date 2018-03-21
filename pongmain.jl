@@ -12,6 +12,7 @@ println("Start")
 # *think* _this_ is because of having a huge queue of unhandle events. It seems
 # to happen when the app is inactive for a while (like if it's maximized in a
 # different desktop)
+# TODO: Seems to be much higher CPU usage (90% vs 30%) when paused than when playing. Huh!
 
 using SDL2
 
@@ -38,9 +39,10 @@ const kSAFE_GAME_NAME = "PowerPong"
 # Note: These are all Atomics, since they can be modified by the
 # windowEventWatcher callback, which can run in another thread!
 winWidth, winHeight = Threads.Atomic{Int32}(800), Threads.Atomic{Int32}(600)
-# minWinWidth = Int32(660)  # I'm not sure if we actually need one...
+minWinWidth = Int32(20)  # basically 0.
 minWinHeight = Int32(425)  # Prevent getting any smaller than this.
 winWidth_highDPI, winHeight_highDPI = Threads.Atomic{Int32}(800), Threads.Atomic{Int32}(600)
+resize_draw_timer = Timer()
 function makeWinRenderer()
     global winWidth, winHeight, winWidth_highDPI, winHeight_highDPI
     #win = SDL2.CreateWindow("Hello World!", Int32(100), Int32(100), winWidth, winHeight, UInt32(SDL2.WINDOW_SHOWN))
@@ -49,7 +51,9 @@ function makeWinRenderer()
         #UInt32(SDL2.WINDOWPOS_CENTERED()), UInt32(SDL2.WINDOWPOS_CENTERED()), winWidth, winHeight,
         Int32(0), Int32(0), winWidth[], winHeight[],
         UInt32(SDL2.WINDOW_ALLOW_HIGHDPI|SDL2.WINDOW_OPENGL|SDL2.WINDOW_RESIZABLE|SDL2.WINDOW_SHOWN));
+    SDL2.SetWindowMinimumSize(win, minWinWidth, minWinHeight)
     SDL2.AddEventWatch(cfunction(windowEventWatcher, Cint, Tuple{Ptr{Void}, Ptr{SDL2.Event}}), win);
+    start!(resize_draw_timer)
 
     # Find out how big the created window actually was (depends on the system):
     winWidth[], winHeight[], winWidth_highDPI[], winHeight_highDPI[] = getWindowSize(win)
@@ -64,7 +68,7 @@ end
 # This huge function just handles resize events. I'm not sure why it needs to be
 # a callback instead of just the regular pollEvent..
 function windowEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::Cint
-    global winWidth, winHeight, cam, window_paused
+    global winWidth, winHeight, cam, window_paused, renderer, win
     ev = unsafe_load(event_ptr, 1)
     t = UInt32(0)
     for x in ev._Event[4:-1:1]
@@ -82,14 +86,16 @@ function windowEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::Ci
             eventWin = SDL2.GetWindowFromID(winID);
             if (eventWin == data_ptr)
                 w,h,w_highDPI,h_highDPI = getWindowSize(eventWin)
-                if h < minWinHeight
-                    w,h,w_highDPI,h_highDPI = resizeWindow(eventWin, w, minWinHeight)
-                end
                 winWidth[], winHeight[] = w, h
                 winWidth_highDPI[], winHeight_highDPI[] = w_highDPI, h_highDPI
                 cam.w[], cam.h[] = winWidth_highDPI[], winHeight_highDPI[]
                 recenterButtons!()
             end
+            #if elapsed(resize_draw_timer) > 0.005
+                render(sceneStack[end], renderer, eventWin)
+                SDL2.GL_SwapWindow(eventWin);
+                #start!(resize_draw_timer)
+            #end
             window_paused[] = curPaused  # Allow game to resume now that resizing is done.
         elseif (winevent == SDL2.WINDOWEVENT_FOCUS_LOST || winevent == SDL2.WINDOWEVENT_HIDDEN || winevent == SDL2.WINDOWEVENT_MINIMIZED)
             window_paused[] = 1  # Stop game playing so resizing doesn't cause problems.
@@ -102,11 +108,6 @@ function windowEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::Ci
     end
     return 0
 end
-function resizeWindow(win, width, height)
-    SDL2.SetWindowSize(win, width, height)
-    return getWindowSize(win)
-end
-
 
 function getWindowSize(win)
     w,h,w_highDPI,h_highDPI = Int32[0],Int32[0],Int32[0],Int32[0]
@@ -118,6 +119,7 @@ end
 # Having a QuitException is useful for testing, since an exception will simply
 # pause the interpreter. For release builds, the catch() block will call quitSDL().
 struct QuitException <: Exception end
+    
 function quitSDL()
     SDL2.Mix_CloseAudio()
     SDL2.TTF_Quit()
