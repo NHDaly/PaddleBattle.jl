@@ -12,7 +12,6 @@ println("Start")
 # *think* _this_ is because of having a huge queue of unhandle events. It seems
 # to happen when the app is inactive for a while (like if it's maximized in a
 # different desktop)
-# TODO: Seems to be much higher CPU usage (90% vs 30%) when paused than when playing. Huh!
 
 using SDL2
 
@@ -466,7 +465,7 @@ end
 
 function renderScore(renderer)
     # Size the text with a single-digit score so it doesn't move when score hits double-digits.
-    txtW,_ = sizeText(renderer, cam, "Player 1: 0", "$assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf", 26)
+    txtW,_ = sizeText(cam, "Player 1: 0", "$assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf", 26)
     gap=100
     left1 = screenCenterX() - (txtW + txtW + gap)/2.0
     left2 = left1 + txtW + gap
@@ -479,24 +478,39 @@ function renderFPS(renderer,last_10_frame_times)
     renderText(renderer, cam, txt, UIPixelPos(winWidth[]*1/5, 200))
 end
 
-fonts = Dict()
-function sizeText(renderer, cam, txt, fontName, fontSize)
-   _, fw, fh = createText(renderer, cam, txt, fontName, fontSize)
-   scale = worldScale(cam)
-   return fw/scale, fh/scale
+fonts_cache = Dict()
+txt_cache = Dict()
+function sizeText(cam, txt, fontName, fontSize)
+    scale = worldScale(cam)
+    sizeText(scale, txt, loadFont(scale, fontName, fontSize))
 end
-function createText(renderer, cam, txt, fontName, fontSize)
-   scale = worldScale(cam)
+function sizeText(scale, txt, font::Ptr{SDL2.TTF_Font})
+   fw,fh = Cint[1], Cint[1]
+   SDL2.TTF_SizeText(font, txt, pointer(fw), pointer(fh))
+   return fw[1]/scale,fh[1]/scale
+end
+function loadFont(scale, fontName, fontSize)
    fontSize = scale*fontSize
    fontKey = (fontName, fontSize)
-   if haskey(fonts, fontKey)
-       font = fonts[fontKey]
+   if haskey(fonts_cache, fontKey)
+       font = fonts_cache[fontKey]
    else
        font = SDL2.TTF_OpenFont(fontKey...)
-       fonts[fontKey] = font
+       fonts_cache[fontKey] = font
    end
-   text = SDL2.TTF_RenderText_Blended(font, txt, SDL2.Color(20,20,20,255))
-   tex = SDL2.CreateTextureFromSurface(renderer,text)
+   return font
+end
+function createText(renderer, cam, txt, fontName, fontSize)
+   font = loadFont(worldScale(cam), fontName, fontSize)
+   txtKey = (font, txt)
+   if haskey(txt_cache, txtKey)
+       tex = txt_cache[txtKey]
+   else
+       text = SDL2.TTF_RenderText_Blended(font, txt, SDL2.Color(20,20,20,255))
+       tex = SDL2.CreateTextureFromSurface(renderer,text)
+       SDL2.FreeSurface(text)
+       txt_cache[txtKey] = tex
+   end
 
    fw,fh = Cint[1], Cint[1]
    SDL2.TTF_SizeText(font, txt, pointer(fw), pointer(fh))
