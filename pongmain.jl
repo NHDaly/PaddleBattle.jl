@@ -119,8 +119,11 @@ end
 # Having a QuitException is useful for testing, since an exception will simply
 # pause the interpreter. For release builds, the catch() block will call quitSDL().
 struct QuitException <: Exception end
-    
-function quitSDL()
+
+function quitSDL(win)
+    # Need to close the callback before quitting SDL to prevent it from hanging
+    # https://github.com/n0name/2D_Engine/issues/3
+    SDL2.DelEventWatch(cfunction(windowEventWatcher, Cint, Tuple{Ptr{Void}, Ptr{SDL2.Event}}), win);
     SDL2.Mix_CloseAudio()
     SDL2.TTF_Quit()
     SDL2.Quit()
@@ -615,6 +618,7 @@ end
 
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     global renderer, win, paused,game_started, cam
+    win = nothing
     try
         SDL2.init()
         change_dir_if_bundle()
@@ -643,7 +647,7 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
         runSceneGameLoop(scene, renderer, win, playing)
     catch e
         if isa(e, QuitException)
-            quitSDL()
+            quitSDL(win)
         else
             throw(e)  # Every other kind of exception
         end
