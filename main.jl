@@ -32,8 +32,8 @@ include("objects.jl")
 include("display.jl")
 include("keyboard.jl")
 
-const kGAME_NAME = "Power Pong!"
-const kSAFE_GAME_NAME = "PowerPong"
+const kGAME_NAME = "Paddle Battle"
+const kSAFE_GAME_NAME = "PaddleBattle"
 
 # Note: These are all Atomics, since they can be modified by the
 # windowEventWatcher callback, which can run in another thread!
@@ -588,7 +588,7 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
             throw(e)  # Every other kind of exception
         end
     end
-    return 0
+        return 0
 end
 
 #julia_main([""])
