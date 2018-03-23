@@ -464,7 +464,7 @@ function render(scene::PauseScene, renderer, win)
     SDL2.SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
     SDL2.RenderFillRect(renderer, Ref(screenRect))
     renderText(renderer, cam, scene.titleText, screenOffsetFromCenter(0,-149)
-               ; fontSize=40)
+               ; fontName="assets/fonts/press-start-2p/PressStart2P-Regular.ttf", fontSize=32)
     renderText(renderer, cam, scene.subtitleText, screenOffsetFromCenter(0,-109); fontSize = 26)
     for b in values(buttons)
         render(b, cam, renderer)
