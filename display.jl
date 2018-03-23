@@ -51,7 +51,8 @@ function render(o::Ball, cam::Camera, renderer)
     topLeft = WorldPos(o.pos.x - ballW/2., o.pos.y + ballH/2.)
     screenPos = toScreenPos(topLeft, cam)
     rect = SDL2.Rect(screenPos.x, screenPos.y, screenScaleDims(ballW, ballH, cam)...)
-    SDL2.SetRenderDrawColor(renderer, 20, 50, 105, 255)
+    color = kBallColor
+    SDL2.SetRenderDrawColor(renderer, Int64(color.r), Int64(color.g), Int64(color.b), Int64(color.a))
     SDL2.RenderFillRect(renderer, Ref(rect) )
 end
 function render(o::Paddle, cam::Camera, renderer)
@@ -61,7 +62,8 @@ function render(o::Paddle, cam::Camera, renderer)
     topLeft = WorldPos(o.pos.x - paddleW/2., o.pos.y + paddleH/2. + edgeShift)
     screenPos = toScreenPos(topLeft, cam)
     rect = SDL2.Rect(screenPos.x, screenPos.y, screenScaleDims(paddleW, paddleH, cam)...)
-    SDL2.SetRenderDrawColor(renderer, 120, 0, 0, 255)
+    color = kPaddleColor
+    SDL2.SetRenderDrawColor(renderer, Int64(color.r), Int64(color.g), Int64(color.b), Int64(color.a))
     SDL2.RenderFillRect(renderer, Ref(rect) )
 end
 
@@ -166,6 +168,7 @@ function loadFont(scale, fontName, fontSize)
        font = fonts_cache[fontKey]
    else
        font = SDL2.TTF_OpenFont(fontKey...)
+       font == C_NULL && throw(ErrorException("Failed to load font '$fontKey'"))
        fonts_cache[fontKey] = font
    end
    return font

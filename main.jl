@@ -34,6 +34,10 @@ include("keyboard.jl")
 
 const kGAME_NAME = "Paddle Battle"
 const kSAFE_GAME_NAME = "PaddleBattle"
+kBallColor = SDL2.Color(58, 95, 204, 255)
+kPaddleColor = SDL2.Color(203, 60, 51, 255)
+kMainButtonColor = SDL2.Color(80, 80, 180, 255)
+kKeySettingButtonColor = SDL2.Color(180, 50, 43, 255)
 
 # Note: These are all Atomics, since they can be modified by the
 # windowEventWatcher callback, which can run in another thread!
@@ -351,8 +355,6 @@ function handleKeyPress(e,t)
     end
 end
 
-kMainButtonColor = SDL2.Color(80, 80, 180, 255)
-kKeySettingButtonColor = SDL2.Color(170, 40, 43, 255)
 buttons = Dict([
     # This button is disabled until the game starts.
     :bRestart =>
@@ -381,19 +383,19 @@ buttons = Dict([
 
      # Key controls buttons
     :keyALeft =>
-        Button(true, UIPixelPos(0,0), 110, 20, keyDisplayNames[keySettings[:keyALeft]], 16,
+        Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyALeft]], 16,
                kKeySettingButtonColor,
                ()->(tryChangingKeySettingButton(:keyALeft)))
     :keyARight =>
-        Button(true, UIPixelPos(0,0), 110, 20, keyDisplayNames[keySettings[:keyARight]], 16,
+        Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyARight]], 16,
                kKeySettingButtonColor,
                ()->(tryChangingKeySettingButton(:keyARight)))
     :keyBLeft =>
-        Button(true, UIPixelPos(0,0), 110, 20, keyDisplayNames[keySettings[:keyBLeft]], 16,
+        Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyBLeft]], 16,
                kKeySettingButtonColor,
                ()->(tryChangingKeySettingButton(:keyBLeft)))
     :keyBRight =>
-        Button(true, UIPixelPos(0,0), 110, 20, keyDisplayNames[keySettings[:keyBRight]], 16,
+        Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyBRight]], 16,
                kKeySettingButtonColor,
                ()->(tryChangingKeySettingButton(:keyBRight)))
 
@@ -461,8 +463,9 @@ function render(scene::PauseScene, renderer, win)
     if (length(sceneStack) > 1) render(sceneStack[end-1], renderer, win) end
     SDL2.SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
     SDL2.RenderFillRect(renderer, Ref(screenRect))
-    renderText(renderer, cam, scene.titleText, screenOffsetFromCenter(0,-159); fontSize=40)
-    renderText(renderer, cam, scene.subtitleText, screenOffsetFromCenter(0,-119); fontSize = 26)
+    renderText(renderer, cam, scene.titleText, screenOffsetFromCenter(0,-149)
+               ; fontSize=40)
+    renderText(renderer, cam, scene.subtitleText, screenOffsetFromCenter(0,-109); fontSize = 26)
     for b in values(buttons)
         render(b, cam, renderer)
     end
