@@ -227,9 +227,7 @@ function bitcat(outType::Type{T}, arr)::T where T<:Number
     out
 end
 
-type GameScene
-    #ball
-end
+type GameScene end
 
 function handleEvents!(scene::GameScene, e,t)
     global playing,paused
@@ -408,15 +406,15 @@ paddleAControlsX() = screenCenterX()-260
 paddleBControlsX() = screenCenterX()+260
 function recenterButtons!()
     global buttons
-    buttons[:bRestart].pos     = screenOffsetFromCenter(0,22)
-    buttons[:bNewContinue].pos = screenOffsetFromCenter(0,56)
-    buttons[:bSoundToggle].button.pos = screenOffsetFromCenter(0,90)
-    buttons[:bQuit].pos        = screenOffsetFromCenter(0,124)
-    buttons[:keyALeft].pos    = UIPixelPos(paddleAControlsX(), winHeight[]-90)
-    buttons[:keyARight].pos   = UIPixelPos(paddleAControlsX(), winHeight[]-65)
-    buttons[:keyBLeft].pos    = UIPixelPos(paddleBControlsX(), winHeight[]-90)
-    buttons[:keyBRight].pos   = UIPixelPos(paddleBControlsX(), winHeight[]-65)
-    buttons[:bResetDefaultKeys].pos   = UIPixelPos(screenCenterX(), winHeight[]-55)
+    buttons[:bRestart].pos     = screenOffsetFromCenter(0,-25)
+    buttons[:bNewContinue].pos = screenOffsetFromCenter(0,9)
+    buttons[:bSoundToggle].button.pos = screenOffsetFromCenter(0,43)
+    buttons[:bQuit].pos        = screenOffsetFromCenter(0,77)
+    buttons[:keyALeft].pos    = UIPixelPos(paddleAControlsX(), winHeight[]-147)
+    buttons[:keyARight].pos   = UIPixelPos(paddleAControlsX(), winHeight[]-122)
+    buttons[:keyBLeft].pos    = UIPixelPos(paddleBControlsX(), winHeight[]-147)
+    buttons[:keyBRight].pos   = UIPixelPos(paddleBControlsX(), winHeight[]-122)
+    buttons[:bResetDefaultKeys].pos   = UIPixelPos(screenCenterX(), winHeight[]-102)
 end
 function toggleAudio(enabled)
     global audioEnabled;
@@ -446,98 +444,50 @@ function handleEvents!(scene::PauseScene, e,t)
     end
 end
 
+heartIcon = nothing
+jlLogoIcon = nothing
 function render(scene::PauseScene, renderer, win)
+    global heartIcon, jlLogoIcon
+    if heartIcon == nothing || jlLogoIcon == nothing
+        heart_surface = SDL2.LoadBMP("assets/heart.bmp")
+        heartIcon = SDL2.CreateTextureFromSurface(renderer, heart_surface) # Will be C_NULL on failure.
+        SDL2.FreeSurface(heart_surface)
+        jlLogo_surface = SDL2.LoadBMP("assets/jllogo.bmp")
+        jlLogoIcon = SDL2.CreateTextureFromSurface(renderer, jlLogo_surface) # Will be C_NULL on failure.
+        SDL2.FreeSurface(jlLogo_surface)
+    end
     screenRect = SDL2.Rect(0,0, cam.w[], cam.h[])
     # First render the scene under the pause menu so it looks like the pause is over it.
     if (length(sceneStack) > 1) render(sceneStack[end-1], renderer, win) end
     SDL2.SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
     SDL2.RenderFillRect(renderer, Ref(screenRect))
-    renderText(renderer, cam, scene.titleText, screenOffsetFromCenter(0,-100); fontSize=40)
-    renderText(renderer, cam, scene.subtitleText, screenOffsetFromCenter(0,-60); fontSize = 26)
+    renderText(renderer, cam, scene.titleText, screenOffsetFromCenter(0,-159); fontSize=40)
+    renderText(renderer, cam, scene.subtitleText, screenOffsetFromCenter(0,-119); fontSize = 26)
     for b in values(buttons)
         render(b, cam, renderer)
     end
-    renderText(renderer, cam, "Player 1 Controls", UIPixelPos(paddleAControlsX(),winHeight[]-115); fontSize = 15)
-    renderText(renderer, cam, "Player 2 Controls", UIPixelPos(paddleBControlsX(),winHeight[]-115); fontSize = 15)
+    renderText(renderer, cam, "Player 1 Controls", UIPixelPos(paddleAControlsX(),winHeight[]-169); fontSize = 15)
+    renderText(renderer, cam, "Player 2 Controls", UIPixelPos(paddleBControlsX(),winHeight[]-169); fontSize = 15)
     renderText(renderer, cam, "Theme music copyright http://www.freesfx.co.uk", UIPixelPos(screenCenterX(), winHeight[] - 10); fontSize=10)
+
+    _, heartPos, _, jlLogoPos =
+      hcat_render_text(["Programmed with ", " ", " in Julia ", ""], renderer, cam,
+         0, UIPixelPos(screenCenterX(), winHeight[] - 28); fontSize=16)
+    render(heartIcon, heartPos, cam, renderer; size=UIPixelPos(16,16))
+    render(jlLogoIcon, jlLogoPos, cam, renderer; size=UIPixelPos(16,16))
 end
 
 function renderScore(renderer)
     # Size the text with a single-digit score so it doesn't move when score hits double-digits.
-    txtW,_ = sizeText(cam, "Player 1: 0", "$assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf", 26)
-    gap=100
-    left1 = screenCenterX() - (txtW + txtW + gap)/2.0
-    left2 = left1 + txtW + gap
-    renderText(renderer, cam, "Player 1: $scoreA", UIPixelPos(left1, 20); align=leftJustified)
-    renderText(renderer, cam, "Player 2: $scoreB", UIPixelPos(left2, 20); align=leftJustified)
+    txtW,_ = sizeText(cam, "Player 1: 0", defaultFontName, defaultFontSize)
+    hcat_render_text(["Player 1: $scoreA","Player 2: $scoreB"], renderer, cam,
+         100, UIPixelPos(screenCenterX(), 20)
+         ; fixedWidth=txtW)
 end
 function renderFPS(renderer,last_10_frame_times)
     fps = Int(floor(1./mean(last_10_frame_times)))
     txt = "FPS: $fps"
     renderText(renderer, cam, txt, UIPixelPos(winWidth[]*1/5, 200))
-end
-
-fonts_cache = Dict()
-txt_cache = Dict()
-function sizeText(cam, txt, fontName, fontSize)
-    scale = worldScale(cam)
-    sizeText(scale, txt, loadFont(scale, fontName, fontSize))
-end
-function sizeText(scale, txt, font::Ptr{SDL2.TTF_Font})
-   fw,fh = Cint[1], Cint[1]
-   SDL2.TTF_SizeText(font, txt, pointer(fw), pointer(fh))
-   return fw[1]/scale,fh[1]/scale
-end
-function loadFont(scale, fontName, fontSize)
-   fontSize = scale*fontSize
-   fontKey = (fontName, fontSize)
-   if haskey(fonts_cache, fontKey)
-       font = fonts_cache[fontKey]
-   else
-       font = SDL2.TTF_OpenFont(fontKey...)
-       fonts_cache[fontKey] = font
-   end
-   return font
-end
-function createText(renderer, cam, txt, fontName, fontSize)
-   font = loadFont(worldScale(cam), fontName, fontSize)
-   txtKey = (font, txt)
-   if haskey(txt_cache, txtKey)
-       tex = txt_cache[txtKey]
-   else
-       text = SDL2.TTF_RenderText_Blended(font, txt, SDL2.Color(20,20,20,255))
-       tex = SDL2.CreateTextureFromSurface(renderer,text)
-       #SDL2.FreeSurface(text)
-       txt_cache[txtKey] = tex
-   end
-
-   fw,fh = Cint[1], Cint[1]
-   SDL2.TTF_SizeText(font, txt, pointer(fw), pointer(fh))
-   fw,fh = fw[1],fh[1]
-
-   return tex, fw, fh
-end
-@enum TextAlign centered leftJustified rightJustified
-function renderText(renderer, cam::Camera, txt::String, pos::UIPixelPos
-                    ; fontName = "$assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf",
-                     fontSize=26, align::TextAlign = centered)
-   tex, fw, fh = createText(renderer, cam, txt, fontName, fontSize)
-   renderTextSurface(renderer, cam, pos, tex, fw, fh, align)
-end
-
-function renderTextSurface(renderer, cam::Camera, pos::UIPixelPos,
-                           tex::Ptr{SDL2.Texture}, fw::Integer, fh::Integer, align::TextAlign)
-   screenPos = uiToScreen(pos, cam)
-   renderPos = SDL2.Rect(0,0,0,0)
-   if align == centered
-       renderPos = SDL2.Rect(Int(floor(screenPos.x-fw/2.)), Int(floor(screenPos.y-fh/2.)), fw,fh)
-   elseif align == leftJustified
-       renderPos = SDL2.Rect(Int(floor(screenPos.x)), Int(floor(screenPos.y-fh/2.)), fw,fh)
-   else # align == rightJustified
-       renderPos = SDL2.Rect(Int(floor(screenPos.x-fw)), Int(floor(screenPos.y-fh/2.)), fw,fh)
-   end
-   SDL2.RenderCopy(renderer, tex, C_NULL, pointer_from_objref(renderPos))
-   #SDL2.DestroyTexture(tex)
 end
 
 clickedButton = nothing
