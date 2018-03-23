@@ -34,6 +34,7 @@ include("keyboard.jl")
 
 const kGAME_NAME = "Paddle Battle"
 const kSAFE_GAME_NAME = "PaddleBattle"
+kBackgroundColor = SDL2.Color(210,210,210,255)
 kBallColor = SDL2.Color(58, 95, 204, 255)
 kPaddleColor = SDL2.Color(203, 60, 51, 255)
 kMainButtonColor = SDL2.Color(80, 80, 180, 255)
@@ -251,7 +252,8 @@ end
 function render(scene::GameScene, renderer, win)
     global ball,scoreA,scoreB,last_10_frame_times,paused,playing
 
-    SDL2.SetRenderDrawColor(renderer, 200, 200, 200, 255)
+    color = kBackgroundColor
+    SDL2.SetRenderDrawColor(renderer, Int64(color.r), Int64(color.g), Int64(color.b), Int64(color.a))
     SDL2.RenderClear(renderer)
 
     renderScore(renderer)
@@ -461,7 +463,8 @@ function render(scene::PauseScene, renderer, win)
     screenRect = SDL2.Rect(0,0, cam.w[], cam.h[])
     # First render the scene under the pause menu so it looks like the pause is over it.
     if (length(sceneStack) > 1) render(sceneStack[end-1], renderer, win) end
-    SDL2.SetRenderDrawColor(renderer, 200, 200, 200, 200) # transparent
+    color = kBackgroundColor
+    SDL2.SetRenderDrawColor(renderer, Int64(color.r), Int64(color.g), Int64(color.b), 200) # transparent
     SDL2.RenderFillRect(renderer, Ref(screenRect))
     renderText(renderer, cam, scene.titleText, screenOffsetFromCenter(0,-149)
                ; fontSize=40)
