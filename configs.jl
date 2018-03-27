@@ -1,16 +1,16 @@
-defaultFontName = "/Users/daly/Documents/developer/fonts/press-start-2p/PressStart2P-Regular.ttf"
-defaultFontSize = 16
+defaultFontName = "assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf"
+defaultFontSize = 26
 
 # Menu constants
-kPauseSceneTitleFontSize = 35
-kPauseSceneSubtitleFontSize = 26
+kPauseSceneTitleFontSize = 40
+kPauseSceneSubtitleFontSize = 30
 
-kMenuButtonFontSize = 12
-kKeyButtonFontSize = 10
+kMenuButtonFontSize = 20
+kKeyButtonFontSize = 16
 kMenuButtonColor = SDL2.Color(80, 80, 200, 255)
 kKeySettingButtonColor = SDL2.Color(185, 55, 48, 255)
 
-kControlsHeaderFontSize = 10
+kControlsHeaderFontSize = 15
 
 # Game Rendering
 kBackgroundColor = SDL2.Color(210,210,210,255)
