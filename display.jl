@@ -65,8 +65,8 @@ function render(o::Paddle, cam::Camera, renderer)
     SDL2.RenderFillRect(renderer, Ref(rect) )
 end
 
-# abstract type AbstractButton end
-mutable struct Button
+abstract type AbstractButton end
+mutable struct MenuButton <: AbstractButton
     enabled::Bool
     pos::UIPixelPos
     w::Int
@@ -74,11 +74,13 @@ mutable struct Button
     text::String
     callBack
 end
-mutable struct MenuButton
-    button::Button
-end
-mutable struct KeyButton
-    button::Button
+mutable struct KeyButton <: AbstractButton
+    enabled::Bool
+    pos::UIPixelPos
+    w::Int
+    h::Int
+    text::String
+    callBack
 end
 
 mutable struct CheckboxButton
@@ -87,19 +89,17 @@ mutable struct CheckboxButton
 end
 
 import Base.run
-run(b::Button) = b.callBack()
-run(b::MenuButton) = run(b.button)
-run(b::KeyButton) = run(b.button)
+run(b::AbstractButton) = b.callBack()
 function run(b::CheckboxButton)
     b.toggled = !b.toggled
-    b.button.button.callBack(b.toggled)
+    b.button.callBack(b.toggled)
 end
 
 # pointwise subtraction with bounds checking (floors to 0)
 -(a::SDL2.Color, b::Int) = SDL2.Color(a.r-min(b,a.r), a.g-min(b,a.g), a.b-min(b,a.b), a.a-min(b,a.a))
 SDL2.Color(1,5,1,1) - 2 == SDL2.Color(0,3,0,0)
 
-function render(b::Button, cam::Camera, renderer, color, fontSize)
+function render(b::AbstractButton, cam::Camera, renderer, color, fontSize)
     if (!b.enabled)
          return
     end
@@ -125,30 +125,30 @@ function render(b::Button, cam::Camera, renderer, color, fontSize)
 end
 
 function render(b::MenuButton, cam::Camera, renderer)
-    render(b.button, cam, renderer, kMenuButtonColor, kMenuButtonFontSize)
+    render(b, cam, renderer, kMenuButtonColor, kMenuButtonFontSize)
 end
 function render(b::KeyButton, cam::Camera, renderer)
-    render(b.button, cam, renderer, kKeySettingButtonColor, kKeyButtonFontSize)
+    render(b, cam, renderer, kKeySettingButtonColor, kKeyButtonFontSize)
 end
 
 function render(b::CheckboxButton, cam::Camera, renderer)
     # Hack: move button text offcenter before rendering to accomodate checkbox
     offsetText = " "
-    text_backup = b.button.button.text
-    b.button.button.text = offsetText * b.button.button.text
+    text_backup = b.button.text
+    b.button.text = offsetText * b.button.text
     render(b.button, cam, renderer)
-    b.button.button.text = text_backup
+    b.button.text = text_backup
 
     # Render checkbox
-    render_checkbox_square(b.button.button, 6, SDL2.Color(200,200,200, 255), cam, renderer)
+    render_checkbox_square(b.button, 6, SDL2.Color(200,200,200, 255), cam, renderer)
 
     if b.toggled
         # Inside checkbox "fill"
-        render_checkbox_square(b.button.button, 8, SDL2.Color(100,100,100, 255), cam, renderer)
+        render_checkbox_square(b.button, 8, SDL2.Color(100,100,100, 255), cam, renderer)
     end
 end
 
-function render_checkbox_square(b::Button, border, color, cam, renderer)
+function render_checkbox_square(b::AbstractButton, border, color, cam, renderer)
     checkbox_radius = b.h/2. - border  # (checkbox is a square)
     topLeft = UIPixelPos(b.pos.x - b.w/2., b.pos.y - b.h/2.)
     topLeft = topLeft .+ border

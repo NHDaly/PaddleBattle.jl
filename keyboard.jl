@@ -98,18 +98,18 @@ function tryChangingKeySettingButton(keyControl::Symbol, keySym)
 
         prevSym = keySettings[keyControl]
         keySettings[prevKey] = prevSym
-        buttons[prevKey].button.text = keyDisplayNames[prevSym]
+        buttons[prevKey].text = keyDisplayNames[prevSym]
         keySettings[keyControl] = keySym
-        buttons[keyControl].button.text = keyDisplayNames[keySym]
+        buttons[keyControl].text = keyDisplayNames[keySym]
     else
         keySettings[keyControl] = keySym
-        buttons[keyControl].button.text = keyDisplayNames[keySym]
+        buttons[keyControl].text = keyDisplayNames[keySym]
     end
 
     if keySettings == keySettingsDefault()
-        buttons[:bResetDefaultKeys].button.enabled = false
+        buttons[:bResetDefaultKeys].enabled = false
     else
-        buttons[:bResetDefaultKeys].button.enabled = true
+        buttons[:bResetDefaultKeys].enabled = true
     end
 end
 

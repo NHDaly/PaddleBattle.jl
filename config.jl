@@ -1,3 +1,5 @@
+include("timing.jl")
+
 config_read_timer = Timer()
 config_print_error_timer = Timer()
 

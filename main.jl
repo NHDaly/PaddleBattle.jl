@@ -30,17 +30,14 @@ end
 
 const assets = "assets"
 
+include("config.jl")
 include("timing.jl")
 include("objects.jl")
 include("display.jl")
 include("keyboard.jl")
-include("config.jl")
 
 const kGAME_NAME = "Paddle Battle"
 const kSAFE_GAME_NAME = "PaddleBattle"
-kBackgroundColor = SDL2.Color(210,210,210,255)
-kBallColor = SDL2.Color(58, 95, 204, 255)
-kPaddleColor = SDL2.Color(203, 60, 51, 255)
 
 # Note: These are all Atomics, since they can be modified by the
 # windowEventWatcher callback, which can run in another thread!
@@ -135,21 +132,14 @@ function quitSDL(win)
     SDL2.Quit()
 end
 
-
+# Game State Globals
 renderer = win = nothing
-paddleSpeed = 1000
-paddleTimeToMaxSpeed = 0.15
-paddleTimeToDecelerate = 0.05
-paddleAccel = paddleSpeed/paddleTimeToMaxSpeed
-paddleDeccel = paddleSpeed/paddleTimeToDecelerate
-ballSpeed = 350
 paddleA = Paddle(WorldPos(0,200), Vector2D(0,0), 200)
 paddleB = Paddle(WorldPos(0,-200), Vector2D(0,0), 200)
 ball = Ball(WorldPos(0,0), Vector2D(0,-ballSpeed))
 cam = nothing
 scoreA = 0
 scoreB = 0
-winningScore = 11
 paused_ = true # start paused to show the initial menu.
 paused = Ref(paused_)
 window_paused = Threads.Atomic{UInt8}(0) # Whether or not the game should be running (if lost focus)
@@ -367,56 +357,56 @@ end
 buttons = Dict([
     # This button is disabled until the game starts.
     :bRestart =>
-        MenuButton(Button(false, UIPixelPos(0,0), 200, 30, "New Game",
-                   ()->(resetGame(); buttons[:bNewContinue].callBack();)))
+        MenuButton(false, UIPixelPos(0,0), 200, 30, "New Game",
+            ()->(resetGame(); buttons[:bNewContinue].callBack();))
     # Note that this text changes to "Continue" after first press.
     :bNewContinue =>
-        MenuButton(Button(true, UIPixelPos(0,0), 200, 30, "New Game",
-                   ()->(global paused,game_started,buttons;
-                        paused[] = false; game_started[] = true;
-                        buttons[:bNewContinue].text = "Continue"; # After starting game
-                        buttons[:bRestart].enabled = true;        # After starting game
-                        )))
+        MenuButton(true, UIPixelPos(0,0), 200, 30, "New Game",
+               ()->(global paused,game_started,buttons;
+                    paused[] = false; game_started[] = true;
+                    buttons[:bNewContinue].text = "Continue"; # After starting game
+                    buttons[:bRestart].enabled = true;        # After starting game
+                    ))
     :bSoundToggle =>
-        CheckboxButton(true, MenuButton(
-            Button(true, UIPixelPos(0,0), 200, 30, "Sound on/off",
-               (enabled)->(toggleAudio(enabled)))
-           ))
+        CheckboxButton(true,
+            MenuButton(true, UIPixelPos(0,0), 200, 30, "Sound on/off",
+                (enabled)->(toggleAudio(enabled)))
+            )
     :bQuit =>
-        MenuButton(Button(true, UIPixelPos(0,0), 200, 30, "Quit",
-               ()->(global paused, playing; paused[] = playing[] = false;)))
+        MenuButton(true, UIPixelPos(0,0), 200, 30, "Quit",
+            ()->(global paused, playing; paused[] = playing[] = false;))
 
      # Key controls buttons
     :keyALeft =>
-        KeyButton(Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyALeft]],
-                   ()->(tryChangingKeySettingButton(:keyALeft))))
+        KeyButton(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyALeft]],
+               ()->(tryChangingKeySettingButton(:keyALeft)))
     :keyARight =>
-        KeyButton(Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyARight]],
-                   ()->(tryChangingKeySettingButton(:keyARight))))
+        KeyButton(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyARight]],
+               ()->(tryChangingKeySettingButton(:keyARight)))
     :keyBLeft =>
-        KeyButton(Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyBLeft]],
-                   ()->(tryChangingKeySettingButton(:keyBLeft))))
+        KeyButton(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyBLeft]],
+               ()->(tryChangingKeySettingButton(:keyBLeft)))
     :keyBRight =>
-        KeyButton(Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyBRight]],
-                   ()->(tryChangingKeySettingButton(:keyBRight))))
+        KeyButton(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyBRight]],
+               ()->(tryChangingKeySettingButton(:keyBRight)))
 
     :bResetDefaultKeys =>
-        KeyButton(Button(false, UIPixelPos(0,0), 240, 30, "Reset Default Controls",
-                   ()->(resetDefaultKeys())))
+        KeyButton(false, UIPixelPos(0,0), 240, 30, "Reset Default Controls",
+               ()->(resetDefaultKeys()))
   ])
 paddleAControlsX() = screenCenterX()-260
 paddleBControlsX() = screenCenterX()+260
 function recenterButtons!()
     global buttons
-    buttons[:bRestart].button.pos     = screenOffsetFromCenter(0,-25)
-    buttons[:bNewContinue].button.pos = screenOffsetFromCenter(0,9)
-    buttons[:bSoundToggle].button.button.pos = screenOffsetFromCenter(0,43)
-    buttons[:bQuit].button.pos        = screenOffsetFromCenter(0,77)
-    buttons[:keyALeft].button.pos    = UIPixelPos(paddleAControlsX(), winHeight[]-147)
-    buttons[:keyARight].button.pos   = UIPixelPos(paddleAControlsX(), winHeight[]-122)
-    buttons[:keyBLeft].button.pos    = UIPixelPos(paddleBControlsX(), winHeight[]-147)
-    buttons[:keyBRight].button.pos   = UIPixelPos(paddleBControlsX(), winHeight[]-122)
-    buttons[:bResetDefaultKeys].button.pos   = UIPixelPos(screenCenterX(), winHeight[]-102)
+    buttons[:bRestart].pos     = screenOffsetFromCenter(0,-25)
+    buttons[:bNewContinue].pos = screenOffsetFromCenter(0,9)
+    buttons[:bSoundToggle].button.pos = screenOffsetFromCenter(0,43)
+    buttons[:bQuit].pos        = screenOffsetFromCenter(0,77)
+    buttons[:keyALeft].pos    = UIPixelPos(paddleAControlsX(), winHeight[]-147)
+    buttons[:keyARight].pos   = UIPixelPos(paddleAControlsX(), winHeight[]-122)
+    buttons[:keyBLeft].pos    = UIPixelPos(paddleBControlsX(), winHeight[]-147)
+    buttons[:keyBRight].pos   = UIPixelPos(paddleBControlsX(), winHeight[]-122)
+    buttons[:bResetDefaultKeys].pos   = UIPixelPos(screenCenterX(), winHeight[]-102)
 end
 function toggleAudio(enabled)
     global audioEnabled;
@@ -465,13 +455,13 @@ function render(scene::PauseScene, renderer, win)
     SDL2.SetRenderDrawColor(renderer, Int64(color.r), Int64(color.g), Int64(color.b), 200) # transparent
     SDL2.RenderFillRect(renderer, Ref(screenRect))
     renderText(renderer, cam, scene.titleText, screenOffsetFromCenter(0,-149)
-               ; fontSize=40)
-    renderText(renderer, cam, scene.subtitleText, screenOffsetFromCenter(0,-109); fontSize = 26)
+               ; fontSize=kPauseSceneTitleFontSize)
+    renderText(renderer, cam, scene.subtitleText, screenOffsetFromCenter(0,-109); fontSize = kPauseSceneSubtitleFontSize)
     for b in values(buttons)
         render(b, cam, renderer)
     end
-    renderText(renderer, cam, "Player 1 Controls", UIPixelPos(paddleAControlsX(),winHeight[]-169); fontSize = 15)
-    renderText(renderer, cam, "Player 2 Controls", UIPixelPos(paddleBControlsX(),winHeight[]-169); fontSize = 15)
+    renderText(renderer, cam, "Player 1 Controls", UIPixelPos(paddleAControlsX(),winHeight[]-169); fontSize = kControlsHeaderFontSize)
+    renderText(renderer, cam, "Player 2 Controls", UIPixelPos(paddleBControlsX(),winHeight[]-169); fontSize = kControlsHeaderFontSize)
     renderText(renderer, cam, "Theme music copyright http://www.freesfx.co.uk", UIPixelPos(screenCenterX(), winHeight[] - 10);
           fontName="assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf",
           fontSize=10)
@@ -526,13 +516,7 @@ end
 function mouseOnButton(m::UIPixelPos, b::CheckboxButton, cam)
     return mouseOnButton(m, b.button, cam)
 end
-function mouseOnButton(m::UIPixelPos, b::MenuButton, cam)
-    return mouseOnButton(m, b.button, cam)
-end
-function mouseOnButton(m::UIPixelPos, b::KeyButton, cam)
-    return mouseOnButton(m, b.button, cam)
-end
-function mouseOnButton(m::UIPixelPos, b::Button, cam)
+function mouseOnButton(m::UIPixelPos, b::AbstractButton, cam)
     if (!b.enabled) return false end
     topLeft = UIPixelPos(b.pos.x - b.w/2., b.pos.y - b.h/2.)
     if m.x > topLeft.x && m.x <= topLeft.x + b.w &&
