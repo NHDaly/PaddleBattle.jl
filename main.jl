@@ -467,7 +467,7 @@ function render(scene::PauseScene, renderer, win)
           fontSize=10)
 
     _, heartPos, _, jlLogoPos =
-      hcat_render_text(["Programmed with ", " ", " in Julia ", ""], renderer, cam,
+      hcat_render_text(kProgrammedWithJuliaText, renderer, cam,
          0, UIPixelPos(screenCenterX(), winHeight[] - 28);
           fontName="assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf",
           fontSize=16)
