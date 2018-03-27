@@ -168,11 +168,11 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
         if (debug) reloadConfigsFile() end
 
         # Handle Events
-        hadEvents = true
+        e,hadEvents = pollEvent!()
         while hadEvents
-            e,hadEvents = pollEvent!()
             t = getEventType(e)
             handleEvents!(scene,e,t)
+            e,hadEvents = pollEvent!()
         end
 
         # Render
@@ -206,11 +206,8 @@ function performUpdates!(scene, dt) end  # default
 
 
 function pollEvent!()
-    #SDL2.Event() = [SDL2.Event(NTuple{56, Uint8}(zeros(56,1)))]
-    SDL_Event() = Array{UInt8}(zeros(56))
-    e = SDL_Event()
-    success = (SDL2.PollEvent(e) != 0)
-    return e,success
+    e = SDL2.event()
+    return e,(e != nothing)
 end
 function getEventType(e::Array{UInt8})
     # HAHA This is still pretty janky, but I guess that's all you can do w/ unions.
@@ -218,6 +215,9 @@ function getEventType(e::Array{UInt8})
 end
 function getEventType(e::SDL2.Event)
     e._Event[1]
+end
+function getEventType(e::SDL2.AbstractEvent)
+    e._type
 end
 
 function bitcat(outType::Type{T}, arr)::T where T<:Number
@@ -329,10 +329,9 @@ mutable struct GameControls
 end
 const gameControls = GameControls()
 
-getKeySym(e) = UInt32(parse("0b"*join(map(bits,  e[24:-1:21]))))
-function handleKeyPress(e,t)
+function handleKeyPress(e::SDL2.KeyboardEvent,t)
     global paused,debugText
-    keySym = getKeySym(e)
+    keySym = e.keysym.sym
     keyDown = (t == SDL2.KEYDOWN)
     if (keySym == keySettings[:keyALeft])
         paddleAKeys.leftDown = keyDown
@@ -489,10 +488,10 @@ function renderFPS(renderer,last_10_frame_times)
 end
 
 clickedButton = nothing
-function handleMouseClickButton!(e, clickType)
+function handleMouseClickButton!(e::SDL2.MouseButtonEvent, clickType)
     global clickedButton
-    mx = Int64(parse("0b"*join(map(bits,  e[24:-1:21]))));
-    my = Int64(parse("0b"*join(map(bits,  e[28:-1:25]))));
+    mx = e.x
+    my = e.y
     didClickButton = false
     for b in values(buttons)
         if mouseOnButton(UIPixelPos(mx,my),b,cam)
