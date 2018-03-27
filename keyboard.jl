@@ -73,7 +73,15 @@ keyDisplayNames = Dict([
 
 badKeySound = nothing
 function tryChangingKeySettingButton(keyControl::Symbol)
+    global clickedButton
     e,eventType = nothing,nothing
+    # Mark the key button as selected and show it before pausing for input.
+    if (length(sceneStack) >= 1)
+        clickedButton = buttons[keyControl]
+        render(sceneStack[end], renderer, win)
+        SDL2.RenderPresent(renderer)
+        clickedButton = nothing
+    end
     while eventType != SDL2.KEYDOWN
         e, _ = pollEvent!()
         eventType = getEventType(e)

@@ -493,6 +493,11 @@ function handleMouseClickButton!(e, clickType)
     global clickedButton
     mx = Int64(parse("0b"*join(map(bits,  e[24:-1:21]))));
     my = Int64(parse("0b"*join(map(bits,  e[28:-1:25]))));
+    mButton = e[17]
+    println("mButton: $mButton")
+    if mButton != SDL2.BUTTON_LEFT
+        return
+    end
     didClickButton = false
     for b in values(buttons)
         if mouseOnButton(UIPixelPos(mx,my),b,cam)
