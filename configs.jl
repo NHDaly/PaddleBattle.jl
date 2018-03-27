@@ -1,4 +1,4 @@
-defaultFontName = "/Users/daly/Documents/developer/fonts/press-start-2p/PressStart2P-Regular.ttf"
+defaultFontName = "assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf"
 defaultFontSize = 16
 
 kMenuButtonFontSize = 12

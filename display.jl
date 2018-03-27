@@ -1,5 +1,3 @@
-defaultFontName="$assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf"
-defaultFontSize=26
 
 struct ScreenPixelPos  # 0,0 == top-left
     x::Int
@@ -74,28 +72,34 @@ mutable struct Button
     w::Int
     h::Int
     text::String
-    fontSize::Int
-    color::SDL2.Color
     callBack
+end
+mutable struct MenuButton
+    button::Button
+end
+mutable struct KeyButton
+    button::Button
 end
 
 mutable struct CheckboxButton
     toggled::Bool
-    button::Button
+    button::MenuButton
 end
 
 import Base.run
 run(b::Button) = b.callBack()
+run(b::MenuButton) = run(b.button)
+run(b::KeyButton) = run(b.button)
 function run(b::CheckboxButton)
     b.toggled = !b.toggled
-    b.button.callBack(b.toggled)
+    b.button.button.callBack(b.toggled)
 end
 
 # pointwise subtraction with bounds checking (floors to 0)
 -(a::SDL2.Color, b::Int) = SDL2.Color(a.r-min(b,a.r), a.g-min(b,a.g), a.b-min(b,a.b), a.a-min(b,a.a))
 SDL2.Color(1,5,1,1) - 2 == SDL2.Color(0,3,0,0)
 
-function render(b::Button, cam::Camera, renderer)
+function render(b::Button, cam::Camera, renderer, color, fontSize)
     if (!b.enabled)
          return
     end
@@ -104,37 +108,43 @@ function render(b::Button, cam::Camera, renderer)
     rect = SDL2.Rect(screenPos.x, screenPos.y, screenScaleDims(b.w, b.h, cam)...)
     x,y = Int[0], Int[0]
     SDL2.GetMouseState(pointer(x), pointer(y))
-    color = b.color
     if clickedButton == b
         if mouseOnButton(UIPixelPos(x[],y[]),b,cam)
-            color = b.color - 50
+            color = color - 50
         else
-            color = b.color - 30
+            color = color - 30
         end
     else
         if mouseOnButton(UIPixelPos(x[],y[]),b,cam)
-            color = b.color - 10
+            color = color - 10
         end
     end
     SDL2.SetRenderDrawColor(renderer, Int64(color.r), Int64(color.g), Int64(color.b), 255)
     SDL2.RenderFillRect(renderer, Ref(rect) )
-    renderText(renderer, cam, b.text, b.pos; fontSize = b.fontSize)
+    renderText(renderer, cam, b.text, b.pos; fontSize = fontSize)
+end
+
+function render(b::MenuButton, cam::Camera, renderer)
+    render(b.button, cam, renderer, kMenuButtonColor, kMenuButtonFontSize)
+end
+function render(b::KeyButton, cam::Camera, renderer)
+    render(b.button, cam, renderer, kKeySettingButtonColor, kKeyButtonFontSize)
 end
 
 function render(b::CheckboxButton, cam::Camera, renderer)
     # Hack: move button text offcenter before rendering to accomodate checkbox
     offsetText = " "
-    text_backup = b.button.text
-    b.button.text = offsetText * b.button.text
+    text_backup = b.button.button.text
+    b.button.button.text = offsetText * b.button.button.text
     render(b.button, cam, renderer)
-    b.button.text = text_backup
+    b.button.button.text = text_backup
 
     # Render checkbox
-    render_checkbox_square(b.button, 6, SDL2.Color(200,200,200, 255), cam, renderer)
+    render_checkbox_square(b.button.button, 6, SDL2.Color(200,200,200, 255), cam, renderer)
 
     if b.toggled
         # Inside checkbox "fill"
-        render_checkbox_square(b.button, 8, SDL2.Color(100,100,100, 255), cam, renderer)
+        render_checkbox_square(b.button.button, 8, SDL2.Color(100,100,100, 255), cam, renderer)
     end
 end
 

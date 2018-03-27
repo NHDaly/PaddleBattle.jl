@@ -15,6 +15,8 @@ println("Start")
 
 using SDL2
 
+debug = true
+
 # Override SDL libs locations if this script is being compiled for mac .app builds
 if get(ENV, "COMPILING_APPLE_BUNDLE", "false") == "true"
     #  (note that you can still change these values b/c no functions have
@@ -23,6 +25,7 @@ if get(ENV, "COMPILING_APPLE_BUNDLE", "false") == "true"
     eval(SDL2, :(libSDL2 = "libSDL2.dylib"))
     eval(SDL2, :(libSDL2_ttf = "libSDL2_ttf.dylib"))
     eval(SDL2, :(libSDL2_mixer = "libSDL2_mixer.dylib"))
+    debug = false
 end
 
 const assets = "assets"
@@ -31,14 +34,13 @@ include("timing.jl")
 include("objects.jl")
 include("display.jl")
 include("keyboard.jl")
+include("config.jl")
 
 const kGAME_NAME = "Paddle Battle"
 const kSAFE_GAME_NAME = "PaddleBattle"
 kBackgroundColor = SDL2.Color(210,210,210,255)
 kBallColor = SDL2.Color(58, 95, 204, 255)
 kPaddleColor = SDL2.Color(203, 60, 51, 255)
-kMainButtonColor = SDL2.Color(80, 80, 180, 255)
-kKeySettingButtonColor = SDL2.Color(180, 50, 43, 255)
 
 # Note: These are all Atomics, since they can be modified by the
 # windowEventWatcher callback, which can run in another thread!
@@ -99,7 +101,10 @@ function windowEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::Ci
             #end
             window_paused[] = curPaused  # Allow game to resume now that resizing is done.
         elseif (winevent == SDL2.WINDOWEVENT_FOCUS_LOST || winevent == SDL2.WINDOWEVENT_HIDDEN || winevent == SDL2.WINDOWEVENT_MINIMIZED)
-            window_paused[] = 1  # Stop game playing so resizing doesn't cause problems.
+            # Stop game playing so resizing doesn't cause problems.
+            if !debug  # For debug builds, allow editing while playing
+                window_paused[] = 1
+            end
         elseif (winevent == SDL2.WINDOWEVENT_FOCUS_GAINED || winevent == SDL2.WINDOWEVENT_SHOWN)
             window_paused[] = 0
         end
@@ -169,6 +174,8 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
             _ = pollEvent!()
             sleep(0.1)
         end
+        # Reload config for debug
+        if (debug) reloadConfigsFile() end
 
         # Handle Events
         hadEvents = true
@@ -360,65 +367,56 @@ end
 buttons = Dict([
     # This button is disabled until the game starts.
     :bRestart =>
-        Button(false, UIPixelPos(0,0), 200, 30, "New Game", 20,
-               kMainButtonColor,
-               ()->(resetGame(); buttons[:bNewContinue].callBack();))
+        MenuButton(Button(false, UIPixelPos(0,0), 200, 30, "New Game",
+                   ()->(resetGame(); buttons[:bNewContinue].callBack();)))
     # Note that this text changes to "Continue" after first press.
     :bNewContinue =>
-        Button(true, UIPixelPos(0,0), 200, 30, "New Game", 20,
-               kMainButtonColor,
-               ()->(global paused,game_started,buttons;
-                    paused[] = false; game_started[] = true;
-                    buttons[:bNewContinue].text = "Continue"; # After starting game
-                    buttons[:bRestart].enabled = true;        # After starting game
-                    ))
+        MenuButton(Button(true, UIPixelPos(0,0), 200, 30, "New Game",
+                   ()->(global paused,game_started,buttons;
+                        paused[] = false; game_started[] = true;
+                        buttons[:bNewContinue].text = "Continue"; # After starting game
+                        buttons[:bRestart].enabled = true;        # After starting game
+                        )))
     :bSoundToggle =>
-        CheckboxButton(true,
-            Button(true, UIPixelPos(0,0), 200, 30, "Sound on/off", 20,
-               kMainButtonColor,
+        CheckboxButton(true, MenuButton(
+            Button(true, UIPixelPos(0,0), 200, 30, "Sound on/off",
                (enabled)->(toggleAudio(enabled)))
-           )
+           ))
     :bQuit =>
-        Button(true, UIPixelPos(0,0), 200, 30, "Quit", 20,
-               kMainButtonColor,
-               ()->(global paused, playing; paused[] = playing[] = false;))
+        MenuButton(Button(true, UIPixelPos(0,0), 200, 30, "Quit",
+               ()->(global paused, playing; paused[] = playing[] = false;)))
 
      # Key controls buttons
     :keyALeft =>
-        Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyALeft]], 16,
-               kKeySettingButtonColor,
-               ()->(tryChangingKeySettingButton(:keyALeft)))
+        KeyButton(Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyALeft]],
+                   ()->(tryChangingKeySettingButton(:keyALeft))))
     :keyARight =>
-        Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyARight]], 16,
-               kKeySettingButtonColor,
-               ()->(tryChangingKeySettingButton(:keyARight)))
+        KeyButton(Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyARight]],
+                   ()->(tryChangingKeySettingButton(:keyARight))))
     :keyBLeft =>
-        Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyBLeft]], 16,
-               kKeySettingButtonColor,
-               ()->(tryChangingKeySettingButton(:keyBLeft)))
+        KeyButton(Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyBLeft]],
+                   ()->(tryChangingKeySettingButton(:keyBLeft))))
     :keyBRight =>
-        Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyBRight]], 16,
-               kKeySettingButtonColor,
-               ()->(tryChangingKeySettingButton(:keyBRight)))
+        KeyButton(Button(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyBRight]],
+                   ()->(tryChangingKeySettingButton(:keyBRight))))
 
     :bResetDefaultKeys =>
-        Button(false, UIPixelPos(0,0), 240, 30, "Reset Default Controls", 16,
-               kKeySettingButtonColor,
-               ()->(resetDefaultKeys()))
+        KeyButton(Button(false, UIPixelPos(0,0), 240, 30, "Reset Default Controls",
+                   ()->(resetDefaultKeys())))
   ])
 paddleAControlsX() = screenCenterX()-260
 paddleBControlsX() = screenCenterX()+260
 function recenterButtons!()
     global buttons
-    buttons[:bRestart].pos     = screenOffsetFromCenter(0,-25)
-    buttons[:bNewContinue].pos = screenOffsetFromCenter(0,9)
-    buttons[:bSoundToggle].button.pos = screenOffsetFromCenter(0,43)
-    buttons[:bQuit].pos        = screenOffsetFromCenter(0,77)
-    buttons[:keyALeft].pos    = UIPixelPos(paddleAControlsX(), winHeight[]-147)
-    buttons[:keyARight].pos   = UIPixelPos(paddleAControlsX(), winHeight[]-122)
-    buttons[:keyBLeft].pos    = UIPixelPos(paddleBControlsX(), winHeight[]-147)
-    buttons[:keyBRight].pos   = UIPixelPos(paddleBControlsX(), winHeight[]-122)
-    buttons[:bResetDefaultKeys].pos   = UIPixelPos(screenCenterX(), winHeight[]-102)
+    buttons[:bRestart].button.pos     = screenOffsetFromCenter(0,-25)
+    buttons[:bNewContinue].button.pos = screenOffsetFromCenter(0,9)
+    buttons[:bSoundToggle].button.button.pos = screenOffsetFromCenter(0,43)
+    buttons[:bQuit].button.pos        = screenOffsetFromCenter(0,77)
+    buttons[:keyALeft].button.pos    = UIPixelPos(paddleAControlsX(), winHeight[]-147)
+    buttons[:keyARight].button.pos   = UIPixelPos(paddleAControlsX(), winHeight[]-122)
+    buttons[:keyBLeft].button.pos    = UIPixelPos(paddleBControlsX(), winHeight[]-147)
+    buttons[:keyBRight].button.pos   = UIPixelPos(paddleBControlsX(), winHeight[]-122)
+    buttons[:bResetDefaultKeys].button.pos   = UIPixelPos(screenCenterX(), winHeight[]-102)
 end
 function toggleAudio(enabled)
     global audioEnabled;
@@ -474,11 +472,15 @@ function render(scene::PauseScene, renderer, win)
     end
     renderText(renderer, cam, "Player 1 Controls", UIPixelPos(paddleAControlsX(),winHeight[]-169); fontSize = 15)
     renderText(renderer, cam, "Player 2 Controls", UIPixelPos(paddleBControlsX(),winHeight[]-169); fontSize = 15)
-    renderText(renderer, cam, "Theme music copyright http://www.freesfx.co.uk", UIPixelPos(screenCenterX(), winHeight[] - 10); fontSize=10)
+    renderText(renderer, cam, "Theme music copyright http://www.freesfx.co.uk", UIPixelPos(screenCenterX(), winHeight[] - 10);
+          fontName="assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf",
+          fontSize=10)
 
     _, heartPos, _, jlLogoPos =
       hcat_render_text(["Programmed with ", " ", " in Julia ", ""], renderer, cam,
-         0, UIPixelPos(screenCenterX(), winHeight[] - 28); fontSize=16)
+         0, UIPixelPos(screenCenterX(), winHeight[] - 28);
+          fontName="assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf",
+          fontSize=16)
     render(heartIcon, heartPos, cam, renderer; size=UIPixelPos(16,16))
     render(jlLogoIcon, jlLogoPos, cam, renderer; size=UIPixelPos(16,16))
 end
@@ -522,6 +524,12 @@ function handleMouseClickButton!(e, clickType)
 end
 
 function mouseOnButton(m::UIPixelPos, b::CheckboxButton, cam)
+    return mouseOnButton(m, b.button, cam)
+end
+function mouseOnButton(m::UIPixelPos, b::MenuButton, cam)
+    return mouseOnButton(m, b.button, cam)
+end
+function mouseOnButton(m::UIPixelPos, b::KeyButton, cam)
     return mouseOnButton(m, b.button, cam)
 end
 function mouseOnButton(m::UIPixelPos, b::Button, cam)
