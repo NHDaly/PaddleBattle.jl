@@ -12,7 +12,9 @@ kKeySettingButtonColor = SDL2.Color(185, 55, 48, 255)
 
 kControlsHeaderFontSize = 15
 
-kProgrammedWithJuliaText = ["Programmed with ", " ", " in Julialang ", ""]
+kProgrammedWithJuliaText = ["Programmed with ", " ", " using Julialang ", ""]
+kCopyrightNotices = ["Copyright 2018 @nhdalyMadeThis, llc.",
+                     "Theme music copyright http://www.freesfx.co.uk"]
 
 # Game Rendering
 kBackgroundColor = SDL2.Color(210,210,210,255)

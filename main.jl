@@ -462,13 +462,16 @@ function render(scene::PauseScene, renderer, win)
     end
     renderText(renderer, cam, "Player 1 Controls", UIPixelPos(paddleAControlsX(),winHeight[]-169); fontSize = kControlsHeaderFontSize)
     renderText(renderer, cam, "Player 2 Controls", UIPixelPos(paddleBControlsX(),winHeight[]-169); fontSize = kControlsHeaderFontSize)
-    renderText(renderer, cam, "Theme music copyright http://www.freesfx.co.uk", UIPixelPos(screenCenterX(), winHeight[] - 10);
-          fontName="assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf",
-          fontSize=10)
+    renderText(renderer, cam, kCopyrightNotices[1], UIPixelPos(screenCenterX(), winHeight[] - 20);
+            fontName="assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf",
+            fontSize=10)
+    renderText(renderer, cam, kCopyrightNotices[2], UIPixelPos(screenCenterX(), winHeight[] - 8);
+            fontName="assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf",
+            fontSize=10)
 
     _, heartPos, _, jlLogoPos =
       hcat_render_text(kProgrammedWithJuliaText, renderer, cam,
-         0, UIPixelPos(screenCenterX(), winHeight[] - 28);
+         0, UIPixelPos(screenCenterX(), winHeight[] - 35);
           fontName="assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf",
           fontSize=16)
     render(heartIcon, heartPos, cam, renderer; size=UIPixelPos(16,16))
@@ -494,7 +497,6 @@ function handleMouseClickButton!(e, clickType)
     mx = Int64(parse("0b"*join(map(bits,  e[24:-1:21]))));
     my = Int64(parse("0b"*join(map(bits,  e[28:-1:25]))));
     mButton = e[17]
-    println("mButton: $mButton")
     if mButton != SDL2.BUTTON_LEFT
         return
     end
