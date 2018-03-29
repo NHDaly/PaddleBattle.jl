@@ -13,3 +13,8 @@ the build script (`./build.sh`). It simply invokes `build_app.jl` from
 [NHDaly/build-jl-app-bundle](https://github.com/NHDaly/build-jl-app-bundle) to
 compile and bundle a macOS application from the julia code.
 
+
+# License
+This project is licensed under the terms of the MIT license.
+
+Please do go ahead and copy it, modify it, remix it, and sell your creation!
