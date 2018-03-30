@@ -13,7 +13,7 @@ kKeySettingButtonColor = SDL2.Color(185, 55, 48, 255)
 kControlsHeaderFontSize = 15
 
 kProgrammedWithJuliaText = ["Programmed with ", " ", " using Julialang ", ""]
-kCopyrightNotices = ["Copyright 2018 @nhdalyMadeThis, llc.",
+kCopyrightNotices = ["Copyright (c) 2018 @nhdalyMadeThis, LLC.",
                      "Theme music copyright http://www.freesfx.co.uk"]
 
 # Game Rendering

@@ -137,7 +137,7 @@ function load_prefs_backup()
 end
 function init_prefspath()
     global _pp, prefspath, prefsfile
-      _pp = SDL2.GetPrefPath("nhdaly", kSAFE_GAME_NAME)
+      _pp = SDL2.GetPrefPath(kBUNDLE_ORGANIZATION, kSAFE_GAME_NAME)
       if _pp != Cstring(C_NULL)
           prefspath = unsafe_string(_pp)
           prefsfile = joinpath(prefspath, "settings.txt");
@@ -164,4 +164,6 @@ function resetDefaultKeys()
     for (key,val) in keySettingsDefault()
         tryChangingKeySettingButton(key,val)
     end
+    # Write new key settings!
+    write_prefs_backup()
 end

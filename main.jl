@@ -38,6 +38,7 @@ include("keyboard.jl")
 
 const kGAME_NAME = "Paddle Battle"
 const kSAFE_GAME_NAME = "PaddleBattle"
+const kBUNDLE_ORGANIZATION = "nhdalyMadeThis"
 
 # Note: These are all Atomics, since they can be modified by the
 # windowEventWatcher callback, which can run in another thread!
@@ -583,6 +584,7 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
         audioEnabled && SDL2.Mix_PlayMusic( music, Int32(-1) )
         recenterButtons!()
         resetGame();  # Initialize game stuff.
+        println("Preferences file: \"$prefsfile\"")
         playing[] = paused[] = true
         scene = GameScene()
         runSceneGameLoop(scene, renderer, win, playing)
