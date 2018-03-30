@@ -46,7 +46,6 @@ winWidth, winHeight = Threads.Atomic{Int32}(800), Threads.Atomic{Int32}(600)
 minWinWidth = Int32(20)  # basically 0.
 minWinHeight = Int32(425)  # Prevent getting any smaller than this.
 winWidth_highDPI, winHeight_highDPI = Threads.Atomic{Int32}(800), Threads.Atomic{Int32}(600)
-resize_draw_timer = Timer()
 function makeWinRenderer()
     global winWidth, winHeight, winWidth_highDPI, winHeight_highDPI
 
@@ -55,7 +54,6 @@ function makeWinRenderer()
         UInt32(SDL2.WINDOW_ALLOW_HIGHDPI|SDL2.WINDOW_OPENGL|SDL2.WINDOW_RESIZABLE|SDL2.WINDOW_SHOWN));
     SDL2.SetWindowMinimumSize(win, minWinWidth, minWinHeight)
     SDL2.AddEventWatch(cfunction(windowEventWatcher, Cint, Tuple{Ptr{Void}, Ptr{SDL2.Event}}), win);
-    start!(resize_draw_timer)
 
     # Find out how big the created window actually was (depends on the system):
     winWidth[], winHeight[], winWidth_highDPI[], winHeight_highDPI[] = getWindowSize(win)
@@ -92,11 +90,11 @@ function windowEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::Ci
                 cam.w[], cam.h[] = winWidth_highDPI[], winHeight_highDPI[]
                 recenterButtons!()
             end
-            #if elapsed(resize_draw_timer) > 0.005
-                render(sceneStack[end], renderer, eventWin)
-                SDL2.GL_SwapWindow(eventWin);
-                #start!(resize_draw_timer)
-            #end
+            # Note: render after every resize event. I tried limiting it with a
+            # timer, but it's hard to tune (too infrequent and the screen
+            # blinks) & it didn't seem to reduce cpu significantly.
+            render(sceneStack[end], renderer, eventWin)
+            SDL2.GL_SwapWindow(eventWin);
             window_paused[] = curPaused  # Allow game to resume now that resizing is done.
         elseif (winevent == SDL2.WINDOWEVENT_FOCUS_LOST || winevent == SDL2.WINDOWEVENT_HIDDEN || winevent == SDL2.WINDOWEVENT_MINIMIZED)
             # Stop game playing so resizing doesn't cause problems.
