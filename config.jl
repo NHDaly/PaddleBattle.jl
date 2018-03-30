@@ -1,3 +1,6 @@
+# This file allows loading (and dynamically reloading) the configs from
+# the configs file: configs.jl.
+
 include("timing.jl")
 
 config_read_timer = Timer()
@@ -8,7 +11,7 @@ config_reload_time_s = 0.5  # seconds
 """
     reloadConfigsFile()
 
- Reload "configs.json" and assign global variables for top-level keys.
+ Reload "configs.jl" and assign global variables for top-level keys.
  This should be called once for release build during compile time, and can be
  called as part of the run-loop for debug builds to allow on-the-fly editing of
  the configs file.

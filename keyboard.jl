@@ -1,3 +1,5 @@
+# This file contains the code to allow setting & changing key configs. 
+
 keySettingsDefault() = Dict([
     :keyALeft   => SDL2.SDLK_a
     :keyARight  => SDL2.SDLK_d

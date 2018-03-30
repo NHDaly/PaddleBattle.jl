@@ -1,20 +1,9 @@
 println("Start")
 
-# TODO: why does it sometimes hang when you quit.
-#  - My _guess_ is it's when it's got a big queue of events that haven't been
-#  processed, but that could be unrelated.
-#   - this doesn't really make sense: the music stops immediately so it's
-#     clearly already hit the "quit" click event, which was the last thing you
-#     did, so the queue must be clear.
-#  - It happend for >10s on the compiled game, not just thru Atom... HIGH PRIORITY!
-#   - And after, cmd-tab was broken til I relaunched the Dock thru Activity Monitor. Yikes!
-# TODO: Why does the compiled game sometimes have huge cpu utilization? I
-# *think* _this_ is because of having a huge queue of unhandle events. It seems
-# to happen when the app is inactive for a while (like if it's maximized in a
-# different desktop)
-
 using SDL2
 
+# True if this file is being run through the interpreter, and false if being
+# compiled.
 debug = true
 
 # Override SDL libs locations if this script is being compiled for mac .app builds
@@ -28,7 +17,7 @@ if get(ENV, "COMPILING_APPLE_BUNDLE", "false") == "true"
     debug = false
 end
 
-const assets = "assets"
+const assets = "assets" # directory path for game assets relative to pwd().
 
 include("config.jl")
 include("timing.jl")
@@ -64,16 +53,14 @@ function makeWinRenderer()
     return win,renderer
 end
 
-# This huge function just handles resize events. I'm not sure why it needs to be
-# a callback instead of just the regular pollEvent..
+# This huge function handles window events. I believe it needs to be a callback
+# instead of just the regular pollEvent because main thread is paused while
+# resizing, whereas this callback continues to trigger.
 function windowEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::Cint
     global winWidth, winHeight, cam, window_paused, renderer, win
     ev = unsafe_load(event_ptr, 1)
-    t = UInt32(0)
-    for x in ev._Event[4:-1:1]
-        t = t << sizeof(x)*8
-        t |= x
-    end
+    ee = ev._Event
+    t = UInt32(ee[4]) << 24 | UInt32(ee[3]) << 16 | UInt32(ee[2]) << 8 | ee[1]
     t = SDL2.Event(t)
     if (t == SDL2.WindowEvent)
         event = unsafe_load( Ptr{SDL2.WindowEvent}(pointer_from_objref(ev)) )
@@ -176,6 +163,7 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
 
         # Render
         render(scene, renderer, win)
+        if (debug && debugText) renderFPS(renderer,last_10_frame_times) end
         SDL2.RenderPresent(renderer)
 
         # Update
@@ -186,9 +174,10 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
         min_fps = 20.0
         dt = min(dt, 1./min_fps)
         start!(timer)
-        last_10_frame_times = push!(last_10_frame_times, dt)
-        if length(last_10_frame_times) > 10; shift!(last_10_frame_times) ; end
-        if (debugText) renderFPS(renderer,last_10_frame_times) end
+        if debug
+            last_10_frame_times = push!(last_10_frame_times, dt)
+            if length(last_10_frame_times) > 10; shift!(last_10_frame_times) ; end
+        end
 
         performUpdates!(scene, dt)
         #sleep(0.01)
@@ -328,7 +317,7 @@ mutable struct GameControls
 end
 const gameControls = GameControls()
 
-getKeySym(e) = UInt32(parse("0b"*join(map(bits,  e[24:-1:21]))))
+getKeySym(e) = bitcat(UInt32, e[24:-1:21])
 function handleKeyPress(e,t)
     global paused,debugText
     keySym = getKeySym(e)
@@ -493,8 +482,8 @@ end
 clickedButton = nothing
 function handleMouseClickButton!(e, clickType)
     global clickedButton
-    mx = Int64(parse("0b"*join(map(bits,  e[24:-1:21]))));
-    my = Int64(parse("0b"*join(map(bits,  e[28:-1:25]))));
+    mx = bitcat(UInt32, e[24:-1:21])
+    my = bitcat(UInt32, e[28:-1:25])
     mButton = e[17]
     if mButton != SDL2.BUTTON_LEFT
         return
@@ -596,4 +585,4 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
         return 0
 end
 
-#julia_main([""])
+#julia_main([""])  # no julia_main if currently compiling.

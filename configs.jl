@@ -1,3 +1,10 @@
+# This file contains the game configs!
+# In debug builds, this file is reloaded in real-time -- every
+# `config_reload_time_s` seconds, so you test changes on the fly just by
+# modifying these constants.
+# In release builds, this file is only included once, during compilation, so
+# these values are all defined once as globals. 
+
 defaultFontName = "assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf"
 defaultFontSize = 26
 

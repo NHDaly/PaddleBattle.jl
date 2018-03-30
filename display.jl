@@ -1,3 +1,5 @@
+# Defines structus and functions relating to display.
+# Defines `render` for all game objects.
 
 struct ScreenPixelPos  # 0,0 == top-left
     x::Int
