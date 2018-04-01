@@ -1,9 +1,19 @@
-abstract type GameObject end
+# Objects in the game and their supporting functions (update!, collide!, ...)
 
+"""
+    WorldPos(5.0,-200.0)
+x,y float coordinates in the game world (not necessarily the same as pixel
+coordinates on the screen).
+"""
 struct WorldPos  # 0,0 == middle
     x::Float64
     y::Float64
 end
+"""
+    Vector2D(-2.5,1.0)
+x,y vector representing direction in the game world. Could represent a velocity,
+a distance, etc. Subtracting two `WorldPos`itions results in a `Vector2D`.
+"""
 struct Vector2D
     x::Float64
     y::Float64
@@ -22,7 +32,6 @@ import Base.*, Base./, Base.-, Base.+
 -(x::WorldPos) = WorldPos(-x.x, -x.y)
 -(x::Vector2D) = Vector2D(-x.x, -x.y)
 
-const ballWidth=10
 mutable struct Ball
     pos::WorldPos
     vel::Vector2D
@@ -51,32 +60,26 @@ function collide!(p::Paddle, b::Ball)
     audioEnabled && SDL2.Mix_PlayChannel( Int32(-1), pingSound, Int32(0) )
 end
 
-struct Line
+"""
+    LineSegment(WorldPos(0,0), WorldPos(1,1))
+Line segment used for collision detection algorithm.
+"""
+struct LineSegment
      a::WorldPos
      b::WorldPos
 end
-""" Will they collide on the next update?"""
+""" Will they collide on the next update? """
 willCollide(b::Ball, p::Paddle, dt) = willCollide(p,b,dt)
 function willCollide(p::Paddle, b::Ball, dt)
      # If the ball is in the right X-axis vicinity of the paddle.
     if (abs(p.pos.x - b.pos.x) <= (p.length/2.+ballWidth/2.+abs(b.vel.x)*ballWidth))
-        l = Line(b.pos, b.pos+b.vel*dt) # If next update will bring collision.
+        l = LineSegment(b.pos, b.pos+b.vel*dt) # If next update will bring collision.
         return isColliding(p, l, ballWidth)  # will it cross the paddle in the Y-axis
     else
         return false
     end
 end
-""" Did they collide b/c of previous update?"""
-didCollide(b::Ball, p::Paddle, dt) = didCollide(p,b,dt)
-function didCollide(p::Paddle, b::Ball, dt)
-    if (abs(p.pos.x - b.pos.x) <= (p.length/2.+ballWidth/2))
-        l = Line(b.pos-b.vel*dt, b.pos) # Did last update bring collision.
-        return isColliding(p, l, ballWidth)
-    else
-        return false
-    end
-end
-function isColliding(p::Paddle, l::Line, width)
+function isColliding(p::Paddle, l::LineSegment, width)
     v = l.b - l.a
     if v.y != 0
         c0 = (p.pos.y - l.a.y) / v.y
@@ -89,7 +92,7 @@ function isColliding(p::Paddle, l::Line, width)
     return abs(lc0.x - p.pos.x) <= (p.length/2.0 + width/2.)
 end
 
-
+""" Perform game updates for `b` given `dt` seconds since last update. """
 function update!(b::Ball, dt)
     global scoreA, scoreB
     b.pos = b.pos + (b.vel * dt)
@@ -111,6 +114,7 @@ function update!(b::Ball, dt)
         b.vel = Vector2D(abs(b.vel.x), b.vel.y)
     end
 end
+""" Game updates for `p` with `keys` pressed and `dt` seconds since last update. """
 function update!(p::Paddle, keys, dt)
     # Apply velocity
     p.pos = p.pos + (p.vel * dt)

@@ -3,10 +3,13 @@
 # `config_reload_time_s` seconds, so you test changes on the fly just by
 # modifying these constants.
 # In release builds, this file is only included once, during compilation, so
-# these values are all defined once as globals. 
+# these values are all defined once as globals.
 
 defaultFontName = "assets/fonts/FiraCode/ttf/FiraCode-Regular.ttf"
 defaultFontSize = 26
+
+minWinWidth = Int32(20)  # basically 0.
+minWinHeight = Int32(425)  # Prevent getting any smaller than this.
 
 # Menu constants
 kPauseSceneTitleFontSize = 40
@@ -35,6 +38,7 @@ paddleTimeToDecelerate = 0.05
 paddleAccel = paddleSpeed/paddleTimeToMaxSpeed
 paddleDeccel = paddleSpeed/paddleTimeToDecelerate
 ballSpeed = 350
+ballWidth=10
 
 winningScore = 11
 

@@ -24,16 +24,17 @@ include("timing.jl")
 include("objects.jl")
 include("display.jl")
 include("keyboard.jl")
+include("menu.jl")
 
 const kGAME_NAME = "Paddle Battle"
 const kSAFE_GAME_NAME = "PaddleBattle"
 const kBUNDLE_ORGANIZATION = "nhdalyMadeThis"
 
+# -------- Opening a window ---------------
+
 # Note: These are all Atomics, since they can be modified by the
 # windowEventWatcher callback, which can run in another thread!
 winWidth, winHeight = Threads.Atomic{Int32}(800), Threads.Atomic{Int32}(600)
-minWinWidth = Int32(20)  # basically 0.
-minWinHeight = Int32(425)  # Prevent getting any smaller than this.
 winWidth_highDPI, winHeight_highDPI = Threads.Atomic{Int32}(800), Threads.Atomic{Int32}(600)
 function makeWinRenderer()
     global winWidth, winHeight, winWidth_highDPI, winHeight_highDPI
@@ -53,9 +54,9 @@ function makeWinRenderer()
     return win,renderer
 end
 
-# This huge function handles window events. I believe it needs to be a callback
-# instead of just the regular pollEvent because main thread is paused while
-# resizing, whereas this callback continues to trigger.
+# This huge function handles all window events. I believe it needs to be a
+# callback instead of just the regular pollEvent because the main thread is
+# paused while resizing, whereas this callback continues to trigger.
 function windowEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::Cint
     global winWidth, winHeight, cam, window_paused, renderer, win
     ev = unsafe_load(event_ptr, 1)
@@ -118,6 +119,8 @@ function quitSDL(win)
     SDL2.Quit()
 end
 
+# -------------- Game ------------------------------
+
 # Game State Globals
 renderer = win = nothing
 paddleA = Paddle(WorldPos(0,200), Vector2D(0,0), 200)
@@ -140,6 +143,16 @@ timer = Timer()
 i = 1
 
 sceneStack = []  # Used to keep track of the current scene
+"""
+    runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
+The main game loop. Implements the poll, render, update loop, delegating to the
+current scene (pushes it to the top of sceneStack).
+ - Polls SDL events and passes them to `handleEvents!(scene, e, t)`.
+ - Calls `render(scene, renderer, win)`.
+ - Calls `performUpdates!(scene, dt)`.
+This loop continues until the provided `inSceneVar` is false, then pops the
+scene off the sceneStack.
+"""
 function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
     global last_10_frame_times, i
     push!(sceneStack, scene)
@@ -190,8 +203,13 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
     end
     pop!(sceneStack)
 end
+# Scenes must overload these functions:
+#  render(scene, renderer, win)
+#  handleEvents!(scene, e,t)
+# Scenes can optionally overload this function:
 function performUpdates!(scene, dt) end  # default
 
+# ------------------------------------------
 
 function pollEvent!()
     #SDL2.Event() = [SDL2.Event(NTuple{56, Uint8}(zeros(56,1)))]
@@ -217,6 +235,13 @@ function bitcat(outType::Type{T}, arr)::T where T<:Number
     out
 end
 
+function renderFPS(renderer,last_10_frame_times)
+    fps = Int(floor(1./mean(last_10_frame_times)))
+    txt = "FPS: $fps"
+    renderText(renderer, cam, txt, UIPixelPos(winWidth[]*1/5, 200))
+end
+
+# -------------- Game Scene ---------------------
 type GameScene end
 
 function handleEvents!(scene::GameScene, e,t)
@@ -246,6 +271,14 @@ function render(scene::GameScene, renderer, win)
     render(paddleB, cam, renderer)
 
     render(ball, cam, renderer)
+end
+
+function renderScore(renderer)
+    # Size the text with a single-digit score so it doesn't move when score hits double-digits.
+    txtW,_ = sizeText(cam, "Player 1: 0", defaultFontName, defaultFontSize)
+    hcat_render_text(["Player 1: $scoreA","Player 2: $scoreB"], renderer, cam,
+         100, UIPixelPos(screenCenterX(), 20)
+         ; fixedWidth=txtW)
 end
 
 function performUpdates!(scene::GameScene, dt)
@@ -342,67 +375,7 @@ function handleKeyPress(e,t)
     end
 end
 
-buttons = Dict([
-    # This button is disabled until the game starts.
-    :bRestart =>
-        MenuButton(false, UIPixelPos(0,0), 200, 30, "New Game",
-            ()->(resetGame(); buttons[:bNewContinue].callBack();))
-    # Note that this text changes to "Continue" after first press.
-    :bNewContinue =>
-        MenuButton(true, UIPixelPos(0,0), 200, 30, "New Game",
-               ()->(global paused,game_started,buttons;
-                    paused[] = false; game_started[] = true;
-                    buttons[:bNewContinue].text = "Continue"; # After starting game
-                    buttons[:bRestart].enabled = true;        # After starting game
-                    ))
-    :bSoundToggle =>
-        CheckboxButton(true,
-            MenuButton(true, UIPixelPos(0,0), 200, 30, "Sound on/off",
-                (enabled)->(toggleAudio(enabled)))
-            )
-    :bQuit =>
-        MenuButton(true, UIPixelPos(0,0), 200, 30, "Quit",
-            ()->(global paused, playing; paused[] = playing[] = false;))
-
-     # Key controls buttons
-    :keyALeft =>
-        KeyButton(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyALeft]],
-               ()->(tryChangingKeySettingButton(:keyALeft)))
-    :keyARight =>
-        KeyButton(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyARight]],
-               ()->(tryChangingKeySettingButton(:keyARight)))
-    :keyBLeft =>
-        KeyButton(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyBLeft]],
-               ()->(tryChangingKeySettingButton(:keyBLeft)))
-    :keyBRight =>
-        KeyButton(true, UIPixelPos(0,0), 120, 20, keyDisplayNames[keySettings[:keyBRight]],
-               ()->(tryChangingKeySettingButton(:keyBRight)))
-
-    :bResetDefaultKeys =>
-        KeyButton(false, UIPixelPos(0,0), 240, 30, "Reset Default Controls",
-               ()->(resetDefaultKeys()))
-  ])
-paddleAControlsX() = screenCenterX()-260
-paddleBControlsX() = screenCenterX()+260
-function recenterButtons!()
-    global buttons
-    buttons[:bRestart].pos     = screenOffsetFromCenter(0,-25)
-    buttons[:bNewContinue].pos = screenOffsetFromCenter(0,9)
-    buttons[:bSoundToggle].button.pos = screenOffsetFromCenter(0,43)
-    buttons[:bQuit].pos        = screenOffsetFromCenter(0,77)
-    buttons[:keyALeft].pos    = UIPixelPos(paddleAControlsX(), winHeight[]-147)
-    buttons[:keyARight].pos   = UIPixelPos(paddleAControlsX(), winHeight[]-122)
-    buttons[:keyBLeft].pos    = UIPixelPos(paddleBControlsX(), winHeight[]-147)
-    buttons[:keyBRight].pos   = UIPixelPos(paddleBControlsX(), winHeight[]-122)
-    buttons[:bResetDefaultKeys].pos   = UIPixelPos(screenCenterX(), winHeight[]-102)
-end
-function toggleAudio(enabled)
-    global audioEnabled;
-    audioEnabled = enabled;
-    if (audioEnabled) SDL2.Mix_ResumeMusic()
-    else  SDL2.Mix_PauseMusic()
-    end
-end
+# -------------- Pause Scene ---------------------
 type PauseScene
     titleText::String
     subtitleText::String
@@ -464,19 +437,6 @@ function render(scene::PauseScene, renderer, win)
           fontSize=16)
     render(heartIcon, heartPos, cam, renderer; size=UIPixelPos(16,16))
     render(jlLogoIcon, jlLogoPos, cam, renderer; size=UIPixelPos(16,16))
-end
-
-function renderScore(renderer)
-    # Size the text with a single-digit score so it doesn't move when score hits double-digits.
-    txtW,_ = sizeText(cam, "Player 1: 0", defaultFontName, defaultFontSize)
-    hcat_render_text(["Player 1: $scoreA","Player 2: $scoreB"], renderer, cam,
-         100, UIPixelPos(screenCenterX(), 20)
-         ; fixedWidth=txtW)
-end
-function renderFPS(renderer,last_10_frame_times)
-    fps = Int(floor(1./mean(last_10_frame_times)))
-    txt = "FPS: $fps"
-    renderText(renderer, cam, txt, UIPixelPos(winWidth[]*1/5, 200))
 end
 
 clickedButton = nothing
