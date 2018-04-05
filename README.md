@@ -13,6 +13,11 @@ the build script (`./build.sh`). It simply invokes `build_app.jl` from
 [NHDaly/build-jl-app-bundle](https://github.com/NHDaly/build-jl-app-bundle) to
 compile and bundle a macOS application from the julia code.
 
+# Install
+
+You can download a complete build for Mac here:
+https://nhdaly.github.io/assets/PaddleBattle.dmg
+
 
 # License
 This project is licensed under the terms of the MIT license.
