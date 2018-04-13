@@ -8,10 +8,12 @@ function start!(timer::Timer)
     timer.starttime_ns = (Base.time_ns)()
     return nothing
 end
-""" Return seconds since timer was started. """
+started(timer::Timer) = (timer.starttime_ns ≠ 0)
+
+""" Return seconds since timer was started or 0 if not yet started. """
 function elapsed(timer::Timer)
     local elapsedtime_ns = (Base.time_ns)() - timer.starttime_ns
-    return float(elapsedtime_ns) / 1000000000
+    return started(timer) * float(elapsedtime_ns) / 1000000000
 end
 
 function pause!(timer::Timer)

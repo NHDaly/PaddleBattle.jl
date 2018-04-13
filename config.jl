@@ -17,7 +17,7 @@ config_reload_time_s = 0.5  # seconds
  the configs file.
  """
  function reloadConfigsFile()
-     if elapsed(config_read_timer) > config_reload_time_s
+     if !started(config_read_timer) || elapsed(config_read_timer) > config_reload_time_s
          try
              include("configs.jl")
          catch e
@@ -28,7 +28,7 @@ config_reload_time_s = 0.5  # seconds
 end
 
 function print_config_error(msg)
-    if elapsed(config_print_error_timer) > 5
+    if !started(config_print_error_timer) || elapsed(config_print_error_timer) > 5
         println(msg)
         start!(config_print_error_timer)
     end
@@ -36,3 +36,4 @@ end
 
 # Run once during compile time.
 reloadConfigsFile()
+
