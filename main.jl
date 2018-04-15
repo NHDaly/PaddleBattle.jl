@@ -230,7 +230,7 @@ function bitcat(outType::Type{T}, arr)::T where T<:Number
     out = zero(outType)
     for x in arr
         out = out << sizeof(x)*8
-        out |= x
+        out |= convert(T, x)  # the `convert` prevents signed T from promoting to Int64.
     end
     out
 end
