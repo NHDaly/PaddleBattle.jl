@@ -160,7 +160,11 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
     while (inSceneVar[])
         # Don't run if game is paused by system (resizing, lost focus, etc)
         while window_paused[] != 0  # Note that this will be fixed by windowEventWatcher
-            _ = pollEvent!()
+            e,_ = pollEvent!()
+            t = getEventType(e)
+            if t == SDL2.QUIT
+                throw(QuitException())
+            end
             sleep(0.1)
         end
         # Reload config for debug
