@@ -30,6 +30,7 @@ kCopyrightNotices = ["Copyright (c) 2018 @nhdalyMadeThis, LLC.",
 kBackgroundColor = SDL2.Color(210,210,210,255)
 kBallColor = SDL2.Color(58, 95, 204, 255)
 kPaddleColor = SDL2.Color(203, 60, 51, 255)
+kPaddleRenderH = 15
 
 # Game constants
 paddleSpeed = 1000

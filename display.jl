@@ -56,7 +56,7 @@ function render(o::Ball, cam::Camera, renderer)
     SDL2.RenderFillRect(renderer, Ref(rect) )
 end
 function render(o::Paddle, cam::Camera, renderer)
-    const paddleW = o.length; const paddleH = 15;
+    paddleW = o.length; paddleH = kPaddleRenderH;
     # Move up/down so the edge matches the "center" of paddle.
     edgeShift = if o.pos.y > 0; paddleH/2.; else -paddleH/2.; end
     topLeft = WorldPos(o.pos.x - paddleW/2., o.pos.y + paddleH/2. + edgeShift)
