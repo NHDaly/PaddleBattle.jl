@@ -1,3 +1,7 @@
+#!/bin/sh
+
+set -x
+
 # Load the read/writeable dmg with manually set Finder settings.
 cp ./dmg/Paddle-Battle-rw.dmg ./builddir/Paddle-Battle-rw-tmp.dmg
 # Resize the .dmg to fit the app (plus a 50MB buffer for leeway):
