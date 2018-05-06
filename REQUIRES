@@ -1,4 +1,0 @@
-Compat.jl
-SDL2.jl  # NHDaly/SDL2.jl
-
-# build_app.jl  NHDaly/build-jl-app-bundle
