@@ -1,0 +1,693 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		23564361208F133E0097E349 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 23564360208F133D0097E349 /* assets */; };
+		235643CA208F13DF0097E349 /* libmodplug.1.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643A4208F13C60097E349 /* libmodplug.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643CB208F13DF0097E349 /* libfreetype.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643A5208F13C60097E349 /* libfreetype.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643CC208F13DF0097E349 /* libSDL2_mixer.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643A6208F13C60097E349 /* libSDL2_mixer.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643CD208F13DF0097E349 /* libSDL2-2.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643A7208F13C60097E349 /* libSDL2-2.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643CE208F13DF0097E349 /* libpng16.16.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643A8208F13C60097E349 /* libpng16.16.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643CF208F13DF0097E349 /* libvorbisfile.3.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643A9208F13C60097E349 /* libvorbisfile.3.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643D0208F13DF0097E349 /* libfreetype.6.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643AA208F13C60097E349 /* libfreetype.6.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643D1208F13DF0097E349 /* libvorbisfile.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643AB208F13C60097E349 /* libvorbisfile.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643D2208F13DF0097E349 /* libpng.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643AC208F13C60097E349 /* libpng.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643D3208F13DF0097E349 /* libSDL2_ttf.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643AD208F13C60097E349 /* libSDL2_ttf.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643D4208F13DF0097E349 /* libSDL2.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643AE208F13C60097E349 /* libSDL2.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643D5208F13DF0097E349 /* libSDL2_mixer-2.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643AF208F13C60097E349 /* libSDL2_mixer-2.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643D6208F13DF0097E349 /* libSDL2_ttf-2.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643B0208F13C60097E349 /* libSDL2_ttf-2.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643D7208F13DF0097E349 /* libvorbis.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643B1208F13C60097E349 /* libvorbis.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643D8208F13DF0097E349 /* libvorbis.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643B2208F13C60097E349 /* libvorbis.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643D9208F13DF0097E349 /* libogg.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643B3208F13C60097E349 /* libogg.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643DA208F13DF0097E349 /* libpng16.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643B4208F13C60097E349 /* libpng16.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643DB208F13DF0097E349 /* libmodplug.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643B5208F13C60097E349 /* libmodplug.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643DC208F13DF0097E349 /* libogg.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 235643B6208F13C60097E349 /* libogg.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643DD208F13F70097E349 /* libamd.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642F1208F13280097E349 /* libamd.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643DE208F13F70097E349 /* libarpack.2.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642F0208F13280097E349 /* libarpack.2.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643DF208F13F70097E349 /* libarpack.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564316208F132C0097E349 /* libarpack.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643E0208F13F70097E349 /* libcamd.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642F3208F13280097E349 /* libcamd.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643E1208F13F70097E349 /* libccalltest.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564306208F132A0097E349 /* libccalltest.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643E2208F13F70097E349 /* libccolamd.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564317208F132C0097E349 /* libccolamd.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643E3208F13F70097E349 /* libcholmod.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 2356430E208F132B0097E349 /* libcholmod.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643E4208F13F70097E349 /* libcolamd.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642EB208F13270097E349 /* libcolamd.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643E5208F13F70097E349 /* libcurl.4.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642F4208F13280097E349 /* libcurl.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643E6208F13F70097E349 /* libcurl.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 2356431C208F132D0097E349 /* libcurl.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643E7208F13F70097E349 /* libdSFMT.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564318208F132C0097E349 /* libdSFMT.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643E8208F13F70097E349 /* libfftw3_threads.3.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642EA208F13270097E349 /* libfftw3_threads.3.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643E9208F13F70097E349 /* libfftw3_threads.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564313208F132C0097E349 /* libfftw3_threads.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643EA208F13F70097E349 /* libfftw3.3.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564319208F132C0097E349 /* libfftw3.3.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643EB208F13F70097E349 /* libfftw3.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 2356430D208F132B0097E349 /* libfftw3.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643EC208F13F70097E349 /* libfftw3f_threads.3.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642EF208F13280097E349 /* libfftw3f_threads.3.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643ED208F13F70097E349 /* libfftw3f_threads.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564320208F132D0097E349 /* libfftw3f_threads.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643EE208F13F70097E349 /* libfftw3f.3.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642F6208F13280097E349 /* libfftw3f.3.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643EF208F13F70097E349 /* libfftw3f.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642FD208F13290097E349 /* libfftw3f.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643F0208F13F70097E349 /* libgcc_s.1.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642EC208F13270097E349 /* libgcc_s.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643F1208F13F70097E349 /* libgfortran.4.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564300208F132A0097E349 /* libgfortran.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643F2208F13F70097E349 /* libgit2.0.25.1.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642EE208F13280097E349 /* libgit2.0.25.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643F3208F13F70097E349 /* libgit2.25.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642E9208F13270097E349 /* libgit2.25.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643F4208F13F70097E349 /* libgit2.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642FF208F13290097E349 /* libgit2.dylib */; };
+		235643F5208F13F70097E349 /* libgmp.10.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564304208F132A0097E349 /* libgmp.10.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643F6208F13F70097E349 /* libgmp.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642FB208F13290097E349 /* libgmp.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643F7208F13F70097E349 /* libjulia.0.6.2.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564310208F132B0097E349 /* libjulia.0.6.2.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643F8208F13F70097E349 /* libjulia.0.6.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642E6208F13270097E349 /* libjulia.0.6.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643F9208F13F70097E349 /* libjulia.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 2356430F208F132B0097E349 /* libjulia.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643FA208F13F70097E349 /* libLLVM.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642E8208F13270097E349 /* libLLVM.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643FB208F13F70097E349 /* libmbedcrypto.0.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 2356430B208F132B0097E349 /* libmbedcrypto.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643FC208F13F70097E349 /* libmbedcrypto.2.3.0.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564311208F132C0097E349 /* libmbedcrypto.2.3.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643FD208F13F70097E349 /* libmbedcrypto.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 2356431A208F132D0097E349 /* libmbedcrypto.dylib */; };
+		235643FE208F13F70097E349 /* libmbedtls.2.3.0.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642E4208F13270097E349 /* libmbedtls.2.3.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		235643FF208F13F70097E349 /* libmbedtls.10.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 2356431B208F132D0097E349 /* libmbedtls.10.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23564400208F13F70097E349 /* libmbedtls.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642F9208F13290097E349 /* libmbedtls.dylib */; };
+		23564401208F13F70097E349 /* libmbedx509.0.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564321208F132D0097E349 /* libmbedx509.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23564402208F13F70097E349 /* libmbedx509.2.3.0.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 2356430A208F132B0097E349 /* libmbedx509.2.3.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23564403208F13F70097E349 /* libmbedx509.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 2356431D208F132D0097E349 /* libmbedx509.dylib */; };
+		23564404208F13F70097E349 /* libmpfr.4.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642F7208F13280097E349 /* libmpfr.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23564405208F13F70097E349 /* libmpfr.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642F5208F13280097E349 /* libmpfr.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23564407208F13F70097E349 /* libopenlibm.2.3.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642FE208F13290097E349 /* libopenlibm.2.3.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23564408208F13F70097E349 /* libopenlibm.2.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564314208F132C0097E349 /* libopenlibm.2.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23564409208F13F70097E349 /* libopenlibm.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642FA208F13290097E349 /* libopenlibm.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		2356440A208F13F70097E349 /* libopenspecfun.1.3.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642FC208F13290097E349 /* libopenspecfun.1.3.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		2356440B208F13F70097E349 /* libopenspecfun.1.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564312208F132C0097E349 /* libopenspecfun.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		2356440C208F13F70097E349 /* libopenspecfun.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642ED208F13270097E349 /* libopenspecfun.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		2356440D208F13F70097E349 /* libpcre2-8.0.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642E7208F13270097E349 /* libpcre2-8.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		2356440E208F13F70097E349 /* libpcre2-8.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564301208F132A0097E349 /* libpcre2-8.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		2356440F208F13F70097E349 /* libpcre2-posix.1.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 2356431E208F132D0097E349 /* libpcre2-posix.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23564410208F13F70097E349 /* libpcre2-posix.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564307208F132A0097E349 /* libpcre2-posix.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23564411208F13F70097E349 /* libquadmath.0.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564308208F132B0097E349 /* libquadmath.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23564412208F13F70097E349 /* libspqr.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564303208F132A0097E349 /* libspqr.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23564413208F13F70097E349 /* libssh2.1.0.1.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642F8208F13290097E349 /* libssh2.1.0.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23564414208F13F70097E349 /* libssh2.1.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 2356431F208F132D0097E349 /* libssh2.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23564415208F13F70097E349 /* libssh2.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564309208F132B0097E349 /* libssh2.dylib */; };
+		23564416208F13F70097E349 /* libsuitesparse_wrapper.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 2356430C208F132B0097E349 /* libsuitesparse_wrapper.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23564417208F13F70097E349 /* libsuitesparseconfig.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642E5208F13270097E349 /* libsuitesparseconfig.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23564418208F13F70097E349 /* libumfpack.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 23564315208F132C0097E349 /* libumfpack.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		2356441B208F16390097E349 /* main in CopyFiles */ = {isa = PBXBuildFile; fileRef = 23564305208F132A0097E349 /* main */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		2356441C208F172F0097E349 /* main.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 235642F2208F13280097E349 /* main.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		23C6F67C207E683D003F043A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F67B207E683D003F043A /* Assets.xcassets */; };
+		23C6F772207E709D003F043A /* icns.icns in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F771207E709D003F043A /* icns.icns */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		23C6F6D8207E6B00003F043A /* Copy Files */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+				2356441C208F172F0097E349 /* main.dylib in Copy Files */,
+				235643DD208F13F70097E349 /* libamd.dylib in Copy Files */,
+				235643DE208F13F70097E349 /* libarpack.2.dylib in Copy Files */,
+				235643DF208F13F70097E349 /* libarpack.dylib in Copy Files */,
+				235643E0208F13F70097E349 /* libcamd.dylib in Copy Files */,
+				235643E1208F13F70097E349 /* libccalltest.dylib in Copy Files */,
+				235643E2208F13F70097E349 /* libccolamd.dylib in Copy Files */,
+				235643E3208F13F70097E349 /* libcholmod.dylib in Copy Files */,
+				235643E4208F13F70097E349 /* libcolamd.dylib in Copy Files */,
+				235643E5208F13F70097E349 /* libcurl.4.dylib in Copy Files */,
+				235643E6208F13F70097E349 /* libcurl.dylib in Copy Files */,
+				235643E7208F13F70097E349 /* libdSFMT.dylib in Copy Files */,
+				235643E8208F13F70097E349 /* libfftw3_threads.3.dylib in Copy Files */,
+				235643E9208F13F70097E349 /* libfftw3_threads.dylib in Copy Files */,
+				235643EA208F13F70097E349 /* libfftw3.3.dylib in Copy Files */,
+				235643EB208F13F70097E349 /* libfftw3.dylib in Copy Files */,
+				235643EC208F13F70097E349 /* libfftw3f_threads.3.dylib in Copy Files */,
+				235643ED208F13F70097E349 /* libfftw3f_threads.dylib in Copy Files */,
+				235643EE208F13F70097E349 /* libfftw3f.3.dylib in Copy Files */,
+				235643EF208F13F70097E349 /* libfftw3f.dylib in Copy Files */,
+				235643F0208F13F70097E349 /* libgcc_s.1.dylib in Copy Files */,
+				235643F1208F13F70097E349 /* libgfortran.4.dylib in Copy Files */,
+				235643F2208F13F70097E349 /* libgit2.0.25.1.dylib in Copy Files */,
+				235643F3208F13F70097E349 /* libgit2.25.dylib in Copy Files */,
+				235643F4208F13F70097E349 /* libgit2.dylib in Copy Files */,
+				235643F5208F13F70097E349 /* libgmp.10.dylib in Copy Files */,
+				235643F6208F13F70097E349 /* libgmp.dylib in Copy Files */,
+				235643F7208F13F70097E349 /* libjulia.0.6.2.dylib in Copy Files */,
+				235643F8208F13F70097E349 /* libjulia.0.6.dylib in Copy Files */,
+				235643F9208F13F70097E349 /* libjulia.dylib in Copy Files */,
+				235643FA208F13F70097E349 /* libLLVM.dylib in Copy Files */,
+				235643FB208F13F70097E349 /* libmbedcrypto.0.dylib in Copy Files */,
+				235643FC208F13F70097E349 /* libmbedcrypto.2.3.0.dylib in Copy Files */,
+				235643FD208F13F70097E349 /* libmbedcrypto.dylib in Copy Files */,
+				235643FE208F13F70097E349 /* libmbedtls.2.3.0.dylib in Copy Files */,
+				235643FF208F13F70097E349 /* libmbedtls.10.dylib in Copy Files */,
+				23564400208F13F70097E349 /* libmbedtls.dylib in Copy Files */,
+				23564401208F13F70097E349 /* libmbedx509.0.dylib in Copy Files */,
+				23564402208F13F70097E349 /* libmbedx509.2.3.0.dylib in Copy Files */,
+				23564403208F13F70097E349 /* libmbedx509.dylib in Copy Files */,
+				23564404208F13F70097E349 /* libmpfr.4.dylib in Copy Files */,
+				23564405208F13F70097E349 /* libmpfr.dylib in Copy Files */,
+				23564407208F13F70097E349 /* libopenlibm.2.3.dylib in Copy Files */,
+				23564408208F13F70097E349 /* libopenlibm.2.dylib in Copy Files */,
+				23564409208F13F70097E349 /* libopenlibm.dylib in Copy Files */,
+				2356440A208F13F70097E349 /* libopenspecfun.1.3.dylib in Copy Files */,
+				2356440B208F13F70097E349 /* libopenspecfun.1.dylib in Copy Files */,
+				2356440C208F13F70097E349 /* libopenspecfun.dylib in Copy Files */,
+				2356440D208F13F70097E349 /* libpcre2-8.0.dylib in Copy Files */,
+				2356440E208F13F70097E349 /* libpcre2-8.dylib in Copy Files */,
+				2356440F208F13F70097E349 /* libpcre2-posix.1.dylib in Copy Files */,
+				23564410208F13F70097E349 /* libpcre2-posix.dylib in Copy Files */,
+				23564411208F13F70097E349 /* libquadmath.0.dylib in Copy Files */,
+				23564412208F13F70097E349 /* libspqr.dylib in Copy Files */,
+				23564413208F13F70097E349 /* libssh2.1.0.1.dylib in Copy Files */,
+				23564414208F13F70097E349 /* libssh2.1.dylib in Copy Files */,
+				23564415208F13F70097E349 /* libssh2.dylib in Copy Files */,
+				23564416208F13F70097E349 /* libsuitesparse_wrapper.dylib in Copy Files */,
+				23564417208F13F70097E349 /* libsuitesparseconfig.dylib in Copy Files */,
+				23564418208F13F70097E349 /* libumfpack.dylib in Copy Files */,
+			);
+			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		23C6F6FF207E6D27003F043A /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Libraries;
+			dstSubfolderSpec = 1;
+			files = (
+				235643CA208F13DF0097E349 /* libmodplug.1.dylib in CopyFiles */,
+				235643CB208F13DF0097E349 /* libfreetype.dylib in CopyFiles */,
+				235643CC208F13DF0097E349 /* libSDL2_mixer.dylib in CopyFiles */,
+				235643CD208F13DF0097E349 /* libSDL2-2.0.0.dylib in CopyFiles */,
+				235643CE208F13DF0097E349 /* libpng16.16.dylib in CopyFiles */,
+				235643CF208F13DF0097E349 /* libvorbisfile.3.dylib in CopyFiles */,
+				235643D0208F13DF0097E349 /* libfreetype.6.dylib in CopyFiles */,
+				235643D1208F13DF0097E349 /* libvorbisfile.dylib in CopyFiles */,
+				235643D2208F13DF0097E349 /* libpng.dylib in CopyFiles */,
+				235643D3208F13DF0097E349 /* libSDL2_ttf.dylib in CopyFiles */,
+				235643D4208F13DF0097E349 /* libSDL2.dylib in CopyFiles */,
+				235643D5208F13DF0097E349 /* libSDL2_mixer-2.0.0.dylib in CopyFiles */,
+				235643D6208F13DF0097E349 /* libSDL2_ttf-2.0.0.dylib in CopyFiles */,
+				235643D7208F13DF0097E349 /* libvorbis.dylib in CopyFiles */,
+				235643D8208F13DF0097E349 /* libvorbis.0.dylib in CopyFiles */,
+				235643D9208F13DF0097E349 /* libogg.dylib in CopyFiles */,
+				235643DA208F13DF0097E349 /* libpng16.dylib in CopyFiles */,
+				235643DB208F13DF0097E349 /* libmodplug.dylib in CopyFiles */,
+				235643DC208F13DF0097E349 /* libogg.0.dylib in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		23C6F72A207E6F4A003F043A /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+				2356441B208F16390097E349 /* main in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		235642E4208F13270097E349 /* libmbedtls.2.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmbedtls.2.3.0.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libmbedtls.2.3.0.dylib"; sourceTree = "<group>"; };
+		235642E5208F13270097E349 /* libsuitesparseconfig.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsuitesparseconfig.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libsuitesparseconfig.dylib"; sourceTree = "<group>"; };
+		235642E6208F13270097E349 /* libjulia.0.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libjulia.0.6.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libjulia.0.6.dylib"; sourceTree = "<group>"; };
+		235642E7208F13270097E349 /* libpcre2-8.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libpcre2-8.0.dylib"; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libpcre2-8.0.dylib"; sourceTree = "<group>"; };
+		235642E8208F13270097E349 /* libLLVM.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libLLVM.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libLLVM.dylib"; sourceTree = "<group>"; };
+		235642E9208F13270097E349 /* libgit2.25.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgit2.25.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libgit2.25.dylib"; sourceTree = "<group>"; };
+		235642EA208F13270097E349 /* libfftw3_threads.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfftw3_threads.3.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libfftw3_threads.3.dylib"; sourceTree = "<group>"; };
+		235642EB208F13270097E349 /* libcolamd.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcolamd.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libcolamd.dylib"; sourceTree = "<group>"; };
+		235642EC208F13270097E349 /* libgcc_s.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgcc_s.1.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libgcc_s.1.dylib"; sourceTree = "<group>"; };
+		235642ED208F13270097E349 /* libopenspecfun.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopenspecfun.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libopenspecfun.dylib"; sourceTree = "<group>"; };
+		235642EE208F13280097E349 /* libgit2.0.25.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgit2.0.25.1.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libgit2.0.25.1.dylib"; sourceTree = "<group>"; };
+		235642EF208F13280097E349 /* libfftw3f_threads.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfftw3f_threads.3.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libfftw3f_threads.3.dylib"; sourceTree = "<group>"; };
+		235642F0208F13280097E349 /* libarpack.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libarpack.2.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libarpack.2.dylib"; sourceTree = "<group>"; };
+		235642F1208F13280097E349 /* libamd.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libamd.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libamd.dylib"; sourceTree = "<group>"; };
+		235642F2208F13280097E349 /* main.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = main.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/main.dylib"; sourceTree = "<group>"; };
+		235642F3208F13280097E349 /* libcamd.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcamd.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libcamd.dylib"; sourceTree = "<group>"; };
+		235642F4208F13280097E349 /* libcurl.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcurl.4.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libcurl.4.dylib"; sourceTree = "<group>"; };
+		235642F5208F13280097E349 /* libmpfr.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpfr.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libmpfr.dylib"; sourceTree = "<group>"; };
+		235642F6208F13280097E349 /* libfftw3f.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfftw3f.3.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libfftw3f.3.dylib"; sourceTree = "<group>"; };
+		235642F7208F13280097E349 /* libmpfr.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpfr.4.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libmpfr.4.dylib"; sourceTree = "<group>"; };
+		235642F8208F13290097E349 /* libssh2.1.0.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssh2.1.0.1.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libssh2.1.0.1.dylib"; sourceTree = "<group>"; };
+		235642F9208F13290097E349 /* libmbedtls.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmbedtls.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libmbedtls.dylib"; sourceTree = "<group>"; };
+		235642FA208F13290097E349 /* libopenlibm.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopenlibm.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libopenlibm.dylib"; sourceTree = "<group>"; };
+		235642FB208F13290097E349 /* libgmp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgmp.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libgmp.dylib"; sourceTree = "<group>"; };
+		235642FC208F13290097E349 /* libopenspecfun.1.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopenspecfun.1.3.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libopenspecfun.1.3.dylib"; sourceTree = "<group>"; };
+		235642FD208F13290097E349 /* libfftw3f.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfftw3f.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libfftw3f.dylib"; sourceTree = "<group>"; };
+		235642FE208F13290097E349 /* libopenlibm.2.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopenlibm.2.3.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libopenlibm.2.3.dylib"; sourceTree = "<group>"; };
+		235642FF208F13290097E349 /* libgit2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgit2.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libgit2.dylib"; sourceTree = "<group>"; };
+		23564300208F132A0097E349 /* libgfortran.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgfortran.4.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libgfortran.4.dylib"; sourceTree = "<group>"; };
+		23564301208F132A0097E349 /* libpcre2-8.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libpcre2-8.dylib"; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libpcre2-8.dylib"; sourceTree = "<group>"; };
+		23564303208F132A0097E349 /* libspqr.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libspqr.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libspqr.dylib"; sourceTree = "<group>"; };
+		23564304208F132A0097E349 /* libgmp.10.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgmp.10.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libgmp.10.dylib"; sourceTree = "<group>"; };
+		23564305208F132A0097E349 /* main */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = main; path = "../../builddir/Paddle Battle.app/Contents/MacOS/main"; sourceTree = "<group>"; };
+		23564306208F132A0097E349 /* libccalltest.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libccalltest.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libccalltest.dylib"; sourceTree = "<group>"; };
+		23564307208F132A0097E349 /* libpcre2-posix.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libpcre2-posix.dylib"; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libpcre2-posix.dylib"; sourceTree = "<group>"; };
+		23564308208F132B0097E349 /* libquadmath.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquadmath.0.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libquadmath.0.dylib"; sourceTree = "<group>"; };
+		23564309208F132B0097E349 /* libssh2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssh2.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libssh2.dylib"; sourceTree = "<group>"; };
+		2356430A208F132B0097E349 /* libmbedx509.2.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmbedx509.2.3.0.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libmbedx509.2.3.0.dylib"; sourceTree = "<group>"; };
+		2356430B208F132B0097E349 /* libmbedcrypto.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmbedcrypto.0.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libmbedcrypto.0.dylib"; sourceTree = "<group>"; };
+		2356430C208F132B0097E349 /* libsuitesparse_wrapper.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsuitesparse_wrapper.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libsuitesparse_wrapper.dylib"; sourceTree = "<group>"; };
+		2356430D208F132B0097E349 /* libfftw3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfftw3.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libfftw3.dylib"; sourceTree = "<group>"; };
+		2356430E208F132B0097E349 /* libcholmod.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcholmod.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libcholmod.dylib"; sourceTree = "<group>"; };
+		2356430F208F132B0097E349 /* libjulia.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libjulia.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libjulia.dylib"; sourceTree = "<group>"; };
+		23564310208F132B0097E349 /* libjulia.0.6.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libjulia.0.6.2.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libjulia.0.6.2.dylib"; sourceTree = "<group>"; };
+		23564311208F132C0097E349 /* libmbedcrypto.2.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmbedcrypto.2.3.0.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libmbedcrypto.2.3.0.dylib"; sourceTree = "<group>"; };
+		23564312208F132C0097E349 /* libopenspecfun.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopenspecfun.1.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libopenspecfun.1.dylib"; sourceTree = "<group>"; };
+		23564313208F132C0097E349 /* libfftw3_threads.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfftw3_threads.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libfftw3_threads.dylib"; sourceTree = "<group>"; };
+		23564314208F132C0097E349 /* libopenlibm.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopenlibm.2.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libopenlibm.2.dylib"; sourceTree = "<group>"; };
+		23564315208F132C0097E349 /* libumfpack.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libumfpack.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libumfpack.dylib"; sourceTree = "<group>"; };
+		23564316208F132C0097E349 /* libarpack.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libarpack.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libarpack.dylib"; sourceTree = "<group>"; };
+		23564317208F132C0097E349 /* libccolamd.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libccolamd.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libccolamd.dylib"; sourceTree = "<group>"; };
+		23564318208F132C0097E349 /* libdSFMT.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdSFMT.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libdSFMT.dylib"; sourceTree = "<group>"; };
+		23564319208F132C0097E349 /* libfftw3.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfftw3.3.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libfftw3.3.dylib"; sourceTree = "<group>"; };
+		2356431A208F132D0097E349 /* libmbedcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmbedcrypto.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libmbedcrypto.dylib"; sourceTree = "<group>"; };
+		2356431B208F132D0097E349 /* libmbedtls.10.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmbedtls.10.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libmbedtls.10.dylib"; sourceTree = "<group>"; };
+		2356431C208F132D0097E349 /* libcurl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcurl.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libcurl.dylib"; sourceTree = "<group>"; };
+		2356431D208F132D0097E349 /* libmbedx509.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmbedx509.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libmbedx509.dylib"; sourceTree = "<group>"; };
+		2356431E208F132D0097E349 /* libpcre2-posix.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libpcre2-posix.1.dylib"; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libpcre2-posix.1.dylib"; sourceTree = "<group>"; };
+		2356431F208F132D0097E349 /* libssh2.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssh2.1.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libssh2.1.dylib"; sourceTree = "<group>"; };
+		23564320208F132D0097E349 /* libfftw3f_threads.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfftw3f_threads.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libfftw3f_threads.dylib"; sourceTree = "<group>"; };
+		23564321208F132D0097E349 /* libmbedx509.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmbedx509.0.dylib; path = "../../builddir/Paddle Battle.app/Contents/MacOS/libmbedx509.0.dylib"; sourceTree = "<group>"; };
+		23564360208F133D0097E349 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = "../../builddir/Paddle Battle.app/Contents/Resources/assets"; sourceTree = "<group>"; };
+		235643A4208F13C60097E349 /* libmodplug.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmodplug.1.dylib; sourceTree = "<group>"; };
+		235643A5208F13C60097E349 /* libfreetype.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libfreetype.dylib; sourceTree = "<group>"; };
+		235643A6208F13C60097E349 /* libSDL2_mixer.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libSDL2_mixer.dylib; sourceTree = "<group>"; };
+		235643A7208F13C60097E349 /* libSDL2-2.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libSDL2-2.0.0.dylib"; sourceTree = "<group>"; };
+		235643A8208F13C60097E349 /* libpng16.16.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libpng16.16.dylib; sourceTree = "<group>"; };
+		235643A9208F13C60097E349 /* libvorbisfile.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libvorbisfile.3.dylib; sourceTree = "<group>"; };
+		235643AA208F13C60097E349 /* libfreetype.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libfreetype.6.dylib; sourceTree = "<group>"; };
+		235643AB208F13C60097E349 /* libvorbisfile.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libvorbisfile.dylib; sourceTree = "<group>"; };
+		235643AC208F13C60097E349 /* libpng.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libpng.dylib; sourceTree = "<group>"; };
+		235643AD208F13C60097E349 /* libSDL2_ttf.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libSDL2_ttf.dylib; sourceTree = "<group>"; };
+		235643AE208F13C60097E349 /* libSDL2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libSDL2.dylib; sourceTree = "<group>"; };
+		235643AF208F13C60097E349 /* libSDL2_mixer-2.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libSDL2_mixer-2.0.0.dylib"; sourceTree = "<group>"; };
+		235643B0208F13C60097E349 /* libSDL2_ttf-2.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libSDL2_ttf-2.0.0.dylib"; sourceTree = "<group>"; };
+		235643B1208F13C60097E349 /* libvorbis.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libvorbis.dylib; sourceTree = "<group>"; };
+		235643B2208F13C60097E349 /* libvorbis.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libvorbis.0.dylib; sourceTree = "<group>"; };
+		235643B3208F13C60097E349 /* libogg.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libogg.dylib; sourceTree = "<group>"; };
+		235643B4208F13C60097E349 /* libpng16.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libpng16.dylib; sourceTree = "<group>"; };
+		235643B5208F13C60097E349 /* libmodplug.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmodplug.dylib; sourceTree = "<group>"; };
+		235643B6208F13C60097E349 /* libogg.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libogg.0.dylib; sourceTree = "<group>"; };
+		23C6F675207E683B003F043A /* Paddle Battle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Paddle Battle.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		23C6F67B207E683D003F043A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		23C6F680207E683D003F043A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		23C6F683207E683D003F043A /* Paddle_Battle.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Paddle_Battle.entitlements; sourceTree = "<group>"; };
+		23C6F771207E709D003F043A /* icns.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = icns.icns; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		23C6F672207E683B003F043A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		235643A3208F13C60097E349 /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				235643A4208F13C60097E349 /* libmodplug.1.dylib */,
+				235643A5208F13C60097E349 /* libfreetype.dylib */,
+				235643A6208F13C60097E349 /* libSDL2_mixer.dylib */,
+				235643A7208F13C60097E349 /* libSDL2-2.0.0.dylib */,
+				235643A8208F13C60097E349 /* libpng16.16.dylib */,
+				235643A9208F13C60097E349 /* libvorbisfile.3.dylib */,
+				235643AA208F13C60097E349 /* libfreetype.6.dylib */,
+				235643AB208F13C60097E349 /* libvorbisfile.dylib */,
+				235643AC208F13C60097E349 /* libpng.dylib */,
+				235643AD208F13C60097E349 /* libSDL2_ttf.dylib */,
+				235643AE208F13C60097E349 /* libSDL2.dylib */,
+				235643AF208F13C60097E349 /* libSDL2_mixer-2.0.0.dylib */,
+				235643B0208F13C60097E349 /* libSDL2_ttf-2.0.0.dylib */,
+				235643B1208F13C60097E349 /* libvorbis.dylib */,
+				235643B2208F13C60097E349 /* libvorbis.0.dylib */,
+				235643B3208F13C60097E349 /* libogg.dylib */,
+				235643B4208F13C60097E349 /* libpng16.dylib */,
+				235643B5208F13C60097E349 /* libmodplug.dylib */,
+				235643B6208F13C60097E349 /* libogg.0.dylib */,
+			);
+			name = Libraries;
+			path = "../../builddir/Paddle Battle.app/Contents/Libraries";
+			sourceTree = "<group>";
+		};
+		23C6F66C207E683B003F043A = {
+			isa = PBXGroup;
+			children = (
+				23C6F677207E683B003F043A /* Paddle Battle */,
+				23C6F676207E683B003F043A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		23C6F676207E683B003F043A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				23C6F675207E683B003F043A /* Paddle Battle.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		23C6F677207E683B003F043A /* Paddle Battle */ = {
+			isa = PBXGroup;
+			children = (
+				235642F1208F13280097E349 /* libamd.dylib */,
+				235642F0208F13280097E349 /* libarpack.2.dylib */,
+				23564316208F132C0097E349 /* libarpack.dylib */,
+				235642F3208F13280097E349 /* libcamd.dylib */,
+				23564306208F132A0097E349 /* libccalltest.dylib */,
+				23564317208F132C0097E349 /* libccolamd.dylib */,
+				2356430E208F132B0097E349 /* libcholmod.dylib */,
+				235642EB208F13270097E349 /* libcolamd.dylib */,
+				235642F4208F13280097E349 /* libcurl.4.dylib */,
+				2356431C208F132D0097E349 /* libcurl.dylib */,
+				23564318208F132C0097E349 /* libdSFMT.dylib */,
+				235642EA208F13270097E349 /* libfftw3_threads.3.dylib */,
+				23564313208F132C0097E349 /* libfftw3_threads.dylib */,
+				23564319208F132C0097E349 /* libfftw3.3.dylib */,
+				2356430D208F132B0097E349 /* libfftw3.dylib */,
+				235642EF208F13280097E349 /* libfftw3f_threads.3.dylib */,
+				23564320208F132D0097E349 /* libfftw3f_threads.dylib */,
+				235642F6208F13280097E349 /* libfftw3f.3.dylib */,
+				235642FD208F13290097E349 /* libfftw3f.dylib */,
+				235642EC208F13270097E349 /* libgcc_s.1.dylib */,
+				23564300208F132A0097E349 /* libgfortran.4.dylib */,
+				235642EE208F13280097E349 /* libgit2.0.25.1.dylib */,
+				235642E9208F13270097E349 /* libgit2.25.dylib */,
+				235642FF208F13290097E349 /* libgit2.dylib */,
+				23564304208F132A0097E349 /* libgmp.10.dylib */,
+				235642FB208F13290097E349 /* libgmp.dylib */,
+				23564310208F132B0097E349 /* libjulia.0.6.2.dylib */,
+				235642E6208F13270097E349 /* libjulia.0.6.dylib */,
+				2356430F208F132B0097E349 /* libjulia.dylib */,
+				235642E8208F13270097E349 /* libLLVM.dylib */,
+				2356430B208F132B0097E349 /* libmbedcrypto.0.dylib */,
+				23564311208F132C0097E349 /* libmbedcrypto.2.3.0.dylib */,
+				2356431A208F132D0097E349 /* libmbedcrypto.dylib */,
+				235642E4208F13270097E349 /* libmbedtls.2.3.0.dylib */,
+				2356431B208F132D0097E349 /* libmbedtls.10.dylib */,
+				235642F9208F13290097E349 /* libmbedtls.dylib */,
+				23564321208F132D0097E349 /* libmbedx509.0.dylib */,
+				2356430A208F132B0097E349 /* libmbedx509.2.3.0.dylib */,
+				2356431D208F132D0097E349 /* libmbedx509.dylib */,
+				235642F7208F13280097E349 /* libmpfr.4.dylib */,
+				235642F5208F13280097E349 /* libmpfr.dylib */,
+				235642FE208F13290097E349 /* libopenlibm.2.3.dylib */,
+				23564314208F132C0097E349 /* libopenlibm.2.dylib */,
+				235642FA208F13290097E349 /* libopenlibm.dylib */,
+				235642FC208F13290097E349 /* libopenspecfun.1.3.dylib */,
+				23564312208F132C0097E349 /* libopenspecfun.1.dylib */,
+				235642ED208F13270097E349 /* libopenspecfun.dylib */,
+				235642E7208F13270097E349 /* libpcre2-8.0.dylib */,
+				23564301208F132A0097E349 /* libpcre2-8.dylib */,
+				2356431E208F132D0097E349 /* libpcre2-posix.1.dylib */,
+				23564307208F132A0097E349 /* libpcre2-posix.dylib */,
+				23564308208F132B0097E349 /* libquadmath.0.dylib */,
+				23564303208F132A0097E349 /* libspqr.dylib */,
+				235642F8208F13290097E349 /* libssh2.1.0.1.dylib */,
+				2356431F208F132D0097E349 /* libssh2.1.dylib */,
+				23564309208F132B0097E349 /* libssh2.dylib */,
+				2356430C208F132B0097E349 /* libsuitesparse_wrapper.dylib */,
+				235642E5208F13270097E349 /* libsuitesparseconfig.dylib */,
+				23564315208F132C0097E349 /* libumfpack.dylib */,
+				23564360208F133D0097E349 /* assets */,
+				235643A3208F13C60097E349 /* Libraries */,
+				23564305208F132A0097E349 /* main */,
+				235642F2208F13280097E349 /* main.dylib */,
+				23C6F67B207E683D003F043A /* Assets.xcassets */,
+				23C6F771207E709D003F043A /* icns.icns */,
+				23C6F680207E683D003F043A /* Info.plist */,
+				23C6F683207E683D003F043A /* Paddle_Battle.entitlements */,
+			);
+			path = "Paddle Battle";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		23C6F674207E683B003F043A /* Paddle Battle */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 23C6F686207E683D003F043A /* Build configuration list for PBXNativeTarget "Paddle Battle" */;
+			buildPhases = (
+				2350EE20209E83AB00D830C0 /* Run Script */,
+				23C6F671207E683B003F043A /* Sources */,
+				23C6F672207E683B003F043A /* Frameworks */,
+				23C6F673207E683B003F043A /* Resources */,
+				23C6F6FF207E6D27003F043A /* CopyFiles */,
+				23C6F6D8207E6B00003F043A /* Copy Files */,
+				23C6F72A207E6F4A003F043A /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Paddle Battle";
+			productName = "Paddle Battle";
+			productReference = 23C6F675207E683B003F043A /* Paddle Battle.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		23C6F66D207E683B003F043A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0930;
+				ORGANIZATIONNAME = "nhdalyMadeThis, LLC";
+				TargetAttributes = {
+					23C6F674207E683B003F043A = {
+						CreatedOnToolsVersion = 9.3;
+					};
+				};
+			};
+			buildConfigurationList = 23C6F670207E683B003F043A /* Build configuration list for PBXProject "Paddle Battle" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 23C6F66C207E683B003F043A;
+			productRefGroup = 23C6F676207E683B003F043A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				23C6F674207E683B003F043A /* Paddle Battle */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		23C6F673207E683B003F043A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				23C6F67C207E683D003F043A /* Assets.xcassets in Resources */,
+				23564361208F133E0097E349 /* assets in Resources */,
+				23C6F772207E709D003F043A /* icns.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		2350EE20209E83AB00D830C0 /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Build with no certificate\n\nAPPNAME=\"Paddle Battle\"\njl_main=\"$SRCROOT/../main\"\n\n# Build for distribution\njulia ~/.julia/v0.6/ApplicationBuilder/build_app.jl -v \\\n-R \"$SRCROOT/../assets\" -L \"$SRCROOT/../libs/*\"  --icns \"$SRCROOT/../icns.icns\" \\\n--bundle_identifier \"com.nhdalyMadeThis.Paddle-Battle\" \\\n\"$jl_main.jl\" \"$APPNAME\" \"builddir\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		23C6F671207E683B003F043A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		23C6F684207E683D003F043A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		23C6F685207E683D003F043A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		23C6F687207E683D003F043A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Paddle Battle/Paddle_Battle.entitlements";
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = BBRHTPDKSH;
+				INFOPLIST_FILE = "Paddle Battle/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nhdalyMadeThis.Paddle-Battle";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Debug;
+		};
+		23C6F688207E683D003F043A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Paddle Battle/Paddle_Battle.entitlements";
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = BBRHTPDKSH;
+				INFOPLIST_FILE = "Paddle Battle/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nhdalyMadeThis.Paddle-Battle";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		23C6F670207E683B003F043A /* Build configuration list for PBXProject "Paddle Battle" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				23C6F684207E683D003F043A /* Debug */,
+				23C6F685207E683D003F043A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		23C6F686207E683D003F043A /* Build configuration list for PBXNativeTarget "Paddle Battle" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				23C6F687207E683D003F043A /* Debug */,
+				23C6F688207E683D003F043A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 23C6F66D207E683B003F043A /* Project object */;
+}
