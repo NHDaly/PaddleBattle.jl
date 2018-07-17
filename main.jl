@@ -1,6 +1,7 @@
 println("Start")
 
-using SDL2
+using SimpleDirectMediaLayer
+SDL2 = SimpleDirectMediaLayer
 
 # True if this file is being run through the interpreter, and false if being
 # compiled.
