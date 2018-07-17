@@ -1,3 +1,4 @@
+using Compat
 println("Start")
 
 using SimpleDirectMediaLayer
@@ -15,6 +16,13 @@ if get(ENV, "COMPILING_APPLE_BUNDLE", "false") == "true"
     eval(SDL2, :(libSDL2 = "libSDL2.dylib"))
     eval(SDL2, :(libSDL2_ttf = "libSDL2_ttf.dylib"))
     eval(SDL2, :(libSDL2_mixer = "libSDL2_mixer.dylib"))
+    debug = false
+end
+if Compat.Sys.iswindows()
+    # For now, just manually comment these on/off when building a release.
+    eval(SDL2, :(libSDL2 = "SDL2.dll"))
+    eval(SDL2, :(libSDL2_ttf = "SDL2_ttf.dll"))
+    eval(SDL2, :(libSDL2_mixer = "SDL2_mixer.dll"))
     debug = false
 end
 
