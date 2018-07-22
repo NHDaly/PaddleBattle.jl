@@ -1,6 +1,7 @@
 using Compat
 println("Start")
 
+using ApplicationBuilder
 using SimpleDirectMediaLayer
 SDL2 = SimpleDirectMediaLayer
 
@@ -494,23 +495,6 @@ function mouseOnButton(m::UIPixelPos, b::AbstractButton, cam)
     return false
 end
 
-function change_dir_if_bundle()
-    # julia_cmd() shows how this julia process was invoked.
-    cmd_strings = Base.shell_split(string(Base.julia_cmd()))
-    # The first string is the full path to this executable.
-    full_binary_name = cmd_strings[1][2:end] # (remove leading backtick)
-    if is_apple()
-        # On Apple devices, if this is running inside a .app bundle, it starts
-        # us with pwd="$HOME". Change dir to the Resources dir instead.
-        # Can tell if we're in a bundle by what the full_binary_name ends in.
-        m = match(r".app/Contents/MacOS/[^/]+$", full_binary_name)
-        if m != nothing
-            resources_dir = full_binary_name[1:findlast("/MacOS", full_binary_name)[1]-1]*"/Resources"
-            cd(resources_dir)
-        end
-    end
-    println("new pwd: $(pwd())")
-end
 function load_audio_files()
     global pingSound, scoreSound, badKeySound
     pingSound = SDL2.Mix_LoadWAV( "$assets/ping.wav" );
@@ -520,10 +504,10 @@ end
 
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     global renderer, win, paused,game_started, cam
+    ApplicationBuilder.App.change_dir_if_bundle()
     win = nothing
     try
         SDL2.init()
-        change_dir_if_bundle()
         init_prefspath()
         load_prefs_backup()
         load_audio_files()
