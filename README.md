@@ -5,8 +5,8 @@ the [`SDL2`](https://www.libsdl.org/) library.
 
 This repo is an example of building a complete game, compiled and distributed as
 a `.app`, written entirely in Julia! This game uses the
-[`SDL2.jl`](https://github.com/jonathanBieler/SDL2.jl) package, which provides
-julia bindings for `SDL2`, for its graphics and keyboard/mouse input.
+[`https://github.com/jonathanBieler/SimpleDirectMediaLayer.jl`](https://github.com/jonathanBieler/SimpleDirectMediaLayer.jl)
+package, which provides julia bindings for `SDL2`, for its graphics and keyboard/mouse input.
 
 The game can be compiled into a complete, ready-for-release distributable via
 the build script (`./build.sh`). It simply invokes `build_app.jl` from
