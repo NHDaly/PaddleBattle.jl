@@ -20,7 +20,11 @@ really nice:
 ## Install
 
 You can download the game for Mac here:
-https://nhdalyMadeThis.website
+<br>~https://nhdalyMadeThis.website~
+<br>EDIT: oops sadly I let this domain name expire, and now it's hundreds of dollars to buy it back! 😭 So I'll have to get a new website I guess. 😢
+
+You can download the game from the Releases tab on this github repo:
+<br>https://github.com/NHDaly/PaddleBattle.jl/releases/latest
 
 ## License
 This project is licensed under the terms of the MIT license.
