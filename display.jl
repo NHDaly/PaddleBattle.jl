@@ -13,7 +13,8 @@ end
 UIPixelPos(x::Number, y::Number) = UIPixelPos(convert.(Int, floor.((x,y)))...)
 
 +(a::UIPixelPos, b::UIPixelPos) = UIPixelPos(a.x+b.x, a.y+b.y)
-.+(a::UIPixelPos, x::Number) = UIPixelPos(a.x+x, a.y+x)
+# TODO: 1.0?
++(a::UIPixelPos, x::Number) = UIPixelPos(a.x+x, a.y+x)
 
 mutable struct Camera
     pos::WorldPos
@@ -47,7 +48,7 @@ function screenScaleDims(w,h,c::Camera)
 end
 
 function render(o::Ball, cam::Camera, renderer)
-    const ballW = ballWidth; const ballH = ballWidth;
+    ballW = ballWidth; ballH = ballWidth;
     topLeft = WorldPos(o.pos.x - ballW/2.0, o.pos.y + ballH/2.0)
     screenPos = toScreenPos(topLeft, cam)
     rect = SDL2.Rect(screenPos.x, screenPos.y, screenScaleDims(ballW, ballH, cam)...)
@@ -153,7 +154,7 @@ end
 function render_checkbox_square(b::AbstractButton, border, color, cam, renderer)
     checkbox_radius = b.h/2.0 - border  # (checkbox is a square)
     topLeft = UIPixelPos(b.pos.x - b.w/2.0, b.pos.y - b.h/2.0)
-    topLeft = topLeft .+ border
+    topLeft = topLeft + border
     screenPos = toScreenPos(topLeft, cam)
     rect = SDL2.Rect(screenPos.x, screenPos.y, screenScaleDims(checkbox_radius*2, checkbox_radius*2, cam)...)
     SDL2.SetRenderDrawColor(renderer, Int64(color.r), Int64(color.g), Int64(color.b), 255)

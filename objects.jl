@@ -151,7 +151,7 @@ function update!(p::Paddle, keys, dt)
     end
 
     # Apply accel
-    p.vel = p.vel .+ Vector2D(accel * dt, 0)
+    p.vel = p.vel + Vector2D(accel * dt, 0)
     if decelerating
         # If decelerating pushed it "past" 0, bring it to a stop.
         if (cur_vel_sign < 0 && p.vel.x > 0

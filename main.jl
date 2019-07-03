@@ -2,6 +2,8 @@ using Compat
 println("Start")
 
 using ApplicationBuilder
+import Statistics: mean
+
 using SimpleDirectMediaLayer
 SDL2 = SimpleDirectMediaLayer
 
@@ -41,6 +43,8 @@ const kSAFE_GAME_NAME = "PaddleBattle"
 const kBUNDLE_ORGANIZATION = "nhdalyMadeThis"
 
 # -------- Opening a window ---------------
+# Forward reference for @cfunction
+function windowEventWatcher end
 
 # Note: These are all Atomics, since they can be modified by the
 # windowEventWatcher callback, which can run in another thread!
@@ -53,7 +57,7 @@ function makeWinRenderer()
         Int32(SDL2.WINDOWPOS_CENTERED()), Int32(SDL2.WINDOWPOS_CENTERED()), winWidth[], winHeight[],
         UInt32(SDL2.WINDOW_ALLOW_HIGHDPI|SDL2.WINDOW_OPENGL|SDL2.WINDOW_RESIZABLE|SDL2.WINDOW_SHOWN));
     SDL2.SetWindowMinimumSize(win, minWinWidth, minWinHeight)
-    SDL2.AddEventWatch(cfunction(windowEventWatcher, Cint, Tuple{Ptr{Void}, Ptr{SDL2.Event}}), win);
+    SDL2.AddEventWatch(@cfunction(windowEventWatcher, Cint, (Ptr{Nothing}, Ptr{SDL2.Event})), win);
 
     # Find out how big the created window actually was (depends on the system):
     winWidth[], winHeight[], winWidth_highDPI[], winHeight_highDPI[] = getWindowSize(win)
@@ -67,7 +71,7 @@ end
 # This huge function handles all window events. I believe it needs to be a
 # callback instead of just the regular pollEvent because the main thread is
 # paused while resizing, whereas this callback continues to trigger.
-function windowEventWatcher(data_ptr::Ptr{Void}, event_ptr::Ptr{SDL2.Event})::Cint
+function windowEventWatcher(data_ptr::Ptr{Nothing}, event_ptr::Ptr{SDL2.Event})::Cint
     global winWidth, winHeight, cam, window_paused, renderer, win
     ev = unsafe_load(event_ptr, 1)
     ee = ev._Event
@@ -123,7 +127,7 @@ struct QuitException <: Exception end
 function quitSDL(win)
     # Need to close the callback before quitting SDL to prevent it from hanging
     # https://github.com/n0name/2D_Engine/issues/3
-    SDL2.DelEventWatch(cfunction(windowEventWatcher, Cint, Tuple{Ptr{Void}, Ptr{SDL2.Event}}), win);
+    SDL2.DelEventWatch(cfunction(windowEventWatcher, Cint, Tuple{Ptr{Nothing}, Ptr{SDL2.Event}}), win);
     SDL2.Mix_CloseAudio()
     SDL2.TTF_Quit()
     SDL2.Quit()
@@ -203,7 +207,7 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
         start!(timer)
         if debug
             last_10_frame_times = push!(last_10_frame_times, dt)
-            if length(last_10_frame_times) > 10; shift!(last_10_frame_times) ; end
+            if length(last_10_frame_times) > 10; popfirst!(last_10_frame_times) ; end
         end
 
         performUpdates!(scene, dt)
@@ -243,7 +247,7 @@ end
 function bitcat(outType::Type{T}, arr)::T where T<:Number
     out = zero(outType)
     for x in arr
-        out = out << sizeof(x)*8
+        out = out << (sizeof(x)*8)
         out |= convert(T, x)  # the `convert` prevents signed T from promoting to Int64.
     end
     out
@@ -256,7 +260,7 @@ function renderFPS(renderer,last_10_frame_times)
 end
 
 # -------------- Game Scene ---------------------
-type GameScene end
+struct GameScene end
 
 function handleEvents!(scene::GameScene, e,t)
     global playing,paused
@@ -390,7 +394,7 @@ function handleKeyPress(e,t)
 end
 
 # -------------- Pause Scene ---------------------
-type PauseScene
+struct PauseScene
     titleText::String
     subtitleText::String
 end
@@ -536,7 +540,7 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
         if isa(e, QuitException)
             quitSDL(win)
         else
-            throw(e)  # Every other kind of exception
+            rethrow()  # Every other kind of exception
         end
     end
         return 0
