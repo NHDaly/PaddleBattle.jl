@@ -2,7 +2,7 @@ module PaddleBattle
 
 println("Start")
 
-using ApplicationBuilder
+using ApplicationBuilderAppUtils
 import Statistics: mean
 
 using SimpleDirectMediaLayer
@@ -13,21 +13,20 @@ SDL2 = SimpleDirectMediaLayer
 debug = true
 
 # Override SDL libs locations if this script is being compiled for mac .app builds
-if get(ENV, "COMPILING_APPLE_BUNDLE", "false") == "true"
+if ApplicationBuilderAppUtils.is_static_compiling()
+    debug = false
     #  (note that you can still change these values b/c no functions have
     #  actually been called yet, and so the original constants haven't been
     #  "compiled in".)
-    eval(SDL2, :(libSDL2 = "libSDL2.dylib"))
-    eval(SDL2, :(libSDL2_ttf = "libSDL2_ttf.dylib"))
-    eval(SDL2, :(libSDL2_mixer = "libSDL2_mixer.dylib"))
-    debug = false
-end
-if Sys.iswindows()
-    # For now, just manually comment these on/off when building a release.
-    eval(SDL2, :(libSDL2 = "SDL2.dll"))
-    eval(SDL2, :(libSDL2_ttf = "SDL2_ttf.dll"))
-    eval(SDL2, :(libSDL2_mixer = "SDL2_mixer.dll"))
-    debug = false
+    if Sys.isapple()
+        eval(SDL2, :(libSDL2 = "libSDL2.dylib"))
+        eval(SDL2, :(libSDL2_ttf = "libSDL2_ttf.dylib"))
+        eval(SDL2, :(libSDL2_mixer = "libSDL2_mixer.dylib"))
+    elseif Sys.iswindows()
+        eval(SDL2, :(libSDL2 = "SDL2.dll"))
+        eval(SDL2, :(libSDL2_ttf = "SDL2_ttf.dll"))
+        eval(SDL2, :(libSDL2_mixer = "SDL2_mixer.dll"))
+    end
 end
 
 const assets = "assets" # directory path for game assets relative to pwd().
@@ -509,7 +508,7 @@ end
 
 Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     global renderer, win, paused,game_started, cam
-    ApplicationBuilder.App.change_dir_if_bundle()
+    ApplicationBuilderAppUtils.cd_to_bundle_resources()
     win = nothing
     try
         SDL2.init()
