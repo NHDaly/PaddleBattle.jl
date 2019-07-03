@@ -33,8 +33,8 @@ end
 
 const assets = "assets" # directory path for game assets relative to pwd().
 
-include("config.jl")
 include("timing.jl")
+include("config.jl")
 include("objects.jl")
 include("display.jl")
 include("keyboard.jl")
