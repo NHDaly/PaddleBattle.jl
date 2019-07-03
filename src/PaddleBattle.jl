@@ -19,13 +19,13 @@ if ApplicationBuilderAppUtils.is_static_compiling()
     #  actually been called yet, and so the original constants haven't been
     #  "compiled in".)
     if Sys.isapple()
-        eval(SDL2, :(libSDL2 = "libSDL2.dylib"))
-        eval(SDL2, :(libSDL2_ttf = "libSDL2_ttf.dylib"))
-        eval(SDL2, :(libSDL2_mixer = "libSDL2_mixer.dylib"))
+        @eval SDL2 libSDL2 = "libSDL2.dylib"
+        @eval SDL2 libSDL2_ttf = "libSDL2_ttf.dylib"
+        @eval SDL2 libSDL2_mixer = "libSDL2_mixer.dylib"
     elseif Sys.iswindows()
-        eval(SDL2, :(libSDL2 = "SDL2.dll"))
-        eval(SDL2, :(libSDL2_ttf = "SDL2_ttf.dll"))
-        eval(SDL2, :(libSDL2_mixer = "SDL2_mixer.dll"))
+        @eval SDL2 libSDL2 = "SDL2.dll"
+        @eval SDL2 libSDL2_ttf = "SDL2_ttf.dll"
+        @eval SDL2 libSDL2_mixer = "SDL2_mixer.dll"
     end
 end
 
