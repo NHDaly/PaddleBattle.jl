@@ -148,7 +148,7 @@ playing_ = true
 playing = Ref(playing_)
 debugText = false
 audioEnabled = true
-last_10_frame_times = [1.]
+last_10_frame_times = [1.0]
 timer = Timer()
 i = 1
 
@@ -199,7 +199,7 @@ function runSceneGameLoop(scene, renderer, win, inSceneVar::Ref{Bool})
         # update takes too long, allow the game to actually slow, rather than
         # having too big of frames.
         min_fps = 20.0
-        dt = min(dt, 1./min_fps)
+        dt = min(dt, 1.0/min_fps)
         start!(timer)
         if debug
             last_10_frame_times = push!(last_10_frame_times, dt)
@@ -250,7 +250,7 @@ function bitcat(outType::Type{T}, arr)::T where T<:Number
 end
 
 function renderFPS(renderer,last_10_frame_times)
-    fps = Int(floor(1./mean(last_10_frame_times)))
+    fps = Int(floor(1.0/mean(last_10_frame_times)))
     txt = "FPS: $fps"
     renderText(renderer, cam, txt, UIPixelPos(winWidth[]*1/5, 200))
 end
@@ -487,7 +487,7 @@ function mouseOnButton(m::UIPixelPos, b::CheckboxButton, cam)
 end
 function mouseOnButton(m::UIPixelPos, b::AbstractButton, cam)
     if (!b.enabled) return false end
-    topLeft = UIPixelPos(b.pos.x - b.w/2., b.pos.y - b.h/2.)
+    topLeft = UIPixelPos(b.pos.x - b.w/2.0, b.pos.y - b.h/2.0)
     if m.x > topLeft.x && m.x <= topLeft.x + b.w &&
         m.y > topLeft.y && m.y <= topLeft.y + b.h
         return true

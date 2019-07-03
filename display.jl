@@ -31,7 +31,7 @@ worldScale(c::Camera) = cam.w[] / winWidth[];
 function toScreenPos(p::WorldPos, c::Camera)
     scale = worldScale(c)
     ScreenPixelPos(
-        floor(c.w[]/2. + scale*p.x), floor(c.h[]/2. - scale*p.y))
+        floor(c.w[]/2.0 + scale*p.x), floor(c.h[]/2.0 - scale*p.y))
 end
 function toScreenPos(p::UIPixelPos, c::Camera)
     scale = worldScale(c)
@@ -48,7 +48,7 @@ end
 
 function render(o::Ball, cam::Camera, renderer)
     const ballW = ballWidth; const ballH = ballWidth;
-    topLeft = WorldPos(o.pos.x - ballW/2., o.pos.y + ballH/2.)
+    topLeft = WorldPos(o.pos.x - ballW/2.0, o.pos.y + ballH/2.0)
     screenPos = toScreenPos(topLeft, cam)
     rect = SDL2.Rect(screenPos.x, screenPos.y, screenScaleDims(ballW, ballH, cam)...)
     color = kBallColor
@@ -58,8 +58,8 @@ end
 function render(o::Paddle, cam::Camera, renderer)
     paddleW = o.length; paddleH = kPaddleRenderH;
     # Move up/down so the edge matches the "center" of paddle.
-    edgeShift = if o.pos.y > 0; paddleH/2.; else -paddleH/2.; end
-    topLeft = WorldPos(o.pos.x - paddleW/2., o.pos.y + paddleH/2. + edgeShift)
+    edgeShift = if o.pos.y > 0; paddleH/2.0; else -paddleH/2.0; end
+    topLeft = WorldPos(o.pos.x - paddleW/2.0, o.pos.y + paddleH/2.0 + edgeShift)
     screenPos = toScreenPos(topLeft, cam)
     rect = SDL2.Rect(screenPos.x, screenPos.y, screenScaleDims(paddleW, paddleH, cam)...)
     color = kPaddleColor
@@ -105,7 +105,7 @@ function render(b::AbstractButton, cam::Camera, renderer, color, fontSize)
     if (!b.enabled)
          return
     end
-    topLeft = UIPixelPos(b.pos.x - b.w/2., b.pos.y - b.h/2.)
+    topLeft = UIPixelPos(b.pos.x - b.w/2.0, b.pos.y - b.h/2.0)
     screenPos = toScreenPos(topLeft, cam)
     rect = SDL2.Rect(screenPos.x, screenPos.y, screenScaleDims(b.w, b.h, cam)...)
     x,y = Int[0], Int[0]
@@ -151,8 +151,8 @@ function render(b::CheckboxButton, cam::Camera, renderer)
 end
 
 function render_checkbox_square(b::AbstractButton, border, color, cam, renderer)
-    checkbox_radius = b.h/2. - border  # (checkbox is a square)
-    topLeft = UIPixelPos(b.pos.x - b.w/2., b.pos.y - b.h/2.)
+    checkbox_radius = b.h/2.0 - border  # (checkbox is a square)
+    topLeft = UIPixelPos(b.pos.x - b.w/2.0, b.pos.y - b.h/2.0)
     topLeft = topLeft .+ border
     screenPos = toScreenPos(topLeft, cam)
     rect = SDL2.Rect(screenPos.x, screenPos.y, screenScaleDims(checkbox_radius*2, checkbox_radius*2, cam)...)
@@ -216,11 +216,11 @@ function renderTextSurface(renderer, cam::Camera, pos::UIPixelPos,
    screenPos = toScreenPos(pos, cam)
    renderPos = SDL2.Rect(0,0,0,0)
    if align == centered
-       renderPos = SDL2.Rect(Int(floor(screenPos.x-fw/2.)), Int(floor(screenPos.y-fh/2.)), fw,fh)
+       renderPos = SDL2.Rect(Int(floor(screenPos.x-fw/2.0)), Int(floor(screenPos.y-fh/2.0)), fw,fh)
    elseif align == leftJustified
-       renderPos = SDL2.Rect(Int(floor(screenPos.x)), Int(floor(screenPos.y-fh/2.)), fw,fh)
+       renderPos = SDL2.Rect(Int(floor(screenPos.x)), Int(floor(screenPos.y-fh/2.0)), fw,fh)
    else # align == rightJustified
-       renderPos = SDL2.Rect(Int(floor(screenPos.x-fw)), Int(floor(screenPos.y-fh/2.)), fw,fh)
+       renderPos = SDL2.Rect(Int(floor(screenPos.x-fw)), Int(floor(screenPos.y-fh/2.0)), fw,fh)
    end
    SDL2.RenderCopy(renderer, tex, C_NULL, pointer_from_objref(renderPos))
    #SDL2.DestroyTexture(tex)
