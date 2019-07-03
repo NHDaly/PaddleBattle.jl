@@ -19,7 +19,7 @@ config_reload_time_s = 0.5  # seconds
  function reloadConfigsFile()
      if !started(config_read_timer) || elapsed(config_read_timer) > config_reload_time_s
          try
-             include("configs.jl")
+             include(joinpath(@__DIR__, "..", "assets/configs.jl"))
          catch e
              print_config_error("ERROR: Failed to reload Configs File!:\n '$(e)'")
          end
@@ -36,4 +36,3 @@ end
 
 # Run once during compile time.
 reloadConfigsFile()
-

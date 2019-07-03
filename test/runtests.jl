@@ -1,7 +1,8 @@
 using Base.Test
-using SDL2
-include("objects.jl")
-include("configs.jl")
+using SimpleDirectMediaLayer
+SDL2 = SimpleDirectMediaLayer
+include("../src/objects.jl")
+include("../assets/configs.jl")
 
 # Objects tests
 kZeroVel = Vector2D(0,0)
