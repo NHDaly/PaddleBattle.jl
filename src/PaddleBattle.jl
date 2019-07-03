@@ -1,4 +1,6 @@
+module PaddleBattle
 using Compat
+
 println("Start")
 
 using ApplicationBuilder
@@ -547,3 +549,5 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
 end
 
 #julia_main([""])  # no julia_main if currently compiling.
+
+end
