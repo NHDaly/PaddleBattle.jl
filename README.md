@@ -15,7 +15,7 @@ compile and bundle a macOS application from the julia code.
 
 Building the game in Julia was lots of fun! Not least, live-editing code in Juno is
 really nice:
-![Paddle-Battle-Juno-live-editing.gif](http://nhdalymadethis.website/assets/images/Paddle-Battle-Juno-live-editing.gif)
+![Paddle-Battle-Juno-live-editing.gif](https://raw.githubusercontent.com/NHDaly/nhdalyMadeThis.website/master/assets/images/Paddle-Battle-Juno-live-editing.gif)
 
 ## Install
 
