@@ -1,7 +1,7 @@
 #!/bin/bash
 
 APPNAME="Paddle Battle"
-jl_main="main"
+jl_main="src/main"
 dist_certificate="Developer ID Application: nhdalyMadeThis, LLC"  # outside App Store
 appstore_certificate="3rd Party Mac Developer Application: nhdalyMadeThis, LLC"  # outside App Store
 
