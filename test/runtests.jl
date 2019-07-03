@@ -1,6 +1,8 @@
-using Base.Test
+using Test
+
 using SimpleDirectMediaLayer
 SDL2 = SimpleDirectMediaLayer
+
 include("../src/objects.jl")
 include("../assets/configs.jl")
 
