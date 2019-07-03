@@ -127,7 +127,7 @@ struct QuitException <: Exception end
 function quitSDL(win)
     # Need to close the callback before quitting SDL to prevent it from hanging
     # https://github.com/n0name/2D_Engine/issues/3
-    SDL2.DelEventWatch(cfunction(windowEventWatcher, Cint, Tuple{Ptr{Nothing}, Ptr{SDL2.Event}}), win);
+    SDL2.DelEventWatch(@cfunction(windowEventWatcher, Cint, (Ptr{Nothing}, Ptr{SDL2.Event})), win);
     SDL2.Mix_CloseAudio()
     SDL2.TTF_Quit()
     SDL2.Quit()
