@@ -1,5 +1,4 @@
 module PaddleBattle
-using Compat
 
 println("Start")
 
@@ -23,7 +22,7 @@ if get(ENV, "COMPILING_APPLE_BUNDLE", "false") == "true"
     eval(SDL2, :(libSDL2_mixer = "libSDL2_mixer.dylib"))
     debug = false
 end
-if Compat.Sys.iswindows()
+if Sys.iswindows()
     # For now, just manually comment these on/off when building a release.
     eval(SDL2, :(libSDL2 = "SDL2.dll"))
     eval(SDL2, :(libSDL2_ttf = "SDL2_ttf.dll"))
