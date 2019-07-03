@@ -502,7 +502,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Build with no certificate\n\nAPPNAME=\"Paddle Battle\"\njl_main=\"$SRCROOT/../src/PaddleBattle.jl\"\n\n# Build for distribution\njulia ~/.julia/v0.6/ApplicationBuilder/build_app.jl -v \\\n-R \"$SRCROOT/../assets\" -L \"$SRCROOT/../libs/*\"  --icns \"$SRCROOT/../icns.icns\" \\\n--bundle-identifier \"com.nhdalyMadeThis.Paddle-Battle\" \\\n\"$jl_main\" \"$APPNAME\" \"builddir\"\n";
+			shellScript = "# Build with no certificate or entitlements\n\njulia --project=\"$SRCROOT\" -E '\nusing ApplicationBuilder\n\n# TODO: Switch to using default libraries, instead of custom modified ones\n# using SimpleDirectMediaLayer\n# SDL2 = SimpleDirectMediaLayer\n\nAPPNAME=\"Paddle Battle\"\njl_main=\"src/PaddleBattle.jl\"\ndist_certificate=\"Developer ID Application: nhdalyMadeThis, LLC\"  # outside App Store\nappstore_certificate=\"3rd Party Mac Developer Application: nhdalyMadeThis, LLC\"  # outside App Store\n\nbuild_app_bundle(jl_main, appname=APPNAME, verbose=true,\nlibraries=[\"libs/*\"], resources=[\"assets\"],\nsnoopfile=\"main.jl\",\nicns_file=\"icns.icns\", bundle_identifier=\"com.nhdalyMadeThis.Paddle-Battle\",\napp_version=1.1.0,\n)\n'\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
