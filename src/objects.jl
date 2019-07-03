@@ -72,7 +72,7 @@ end
 willCollide(b::Ball, p::Paddle, dt) = willCollide(p,b,dt)
 function willCollide(p::Paddle, b::Ball, dt)
      # If the ball is in the right X-axis vicinity of the paddle.
-    if (abs(p.pos.x - b.pos.x) <= (p.length/2.+ballWidth/2.+abs(b.vel.x)*ballWidth))
+    if (abs(p.pos.x - b.pos.x) <= (p.length/2.0+ballWidth/2.0+abs(b.vel.x)*ballWidth))
         l = LineSegment(b.pos, b.pos+b.vel*dt) # If next update will bring collision.
         return isColliding(p, l, ballWidth)  # will it cross the paddle in the Y-axis
     else
@@ -83,13 +83,13 @@ function isColliding(p::Paddle, l::LineSegment, width)
     v = l.b - l.a
     if v.y != 0
         c0 = (p.pos.y - l.a.y) / v.y
-        if !(0. <= c0 <= 1.) return false end
+        if !(0.0 <= c0 <= 1.0) return false end
         lc0 = (c0*v + l.a)
     else
         lc0 = l.a
         if (l.a.y != p.pos.y) return false end
     end
-    return abs(lc0.x - p.pos.x) <= (p.length/2.0 + width/2.)
+    return abs(lc0.x - p.pos.x) <= (p.length/2.0 + width/2.0)
 end
 
 """ Perform game updates for `b` given `dt` seconds since last update. """
@@ -97,20 +97,20 @@ function update!(b::Ball, dt)
     global scoreA, scoreB
     b.pos = b.pos + (b.vel * dt)
 
-    if b.pos.y > winHeight[]/2.
+    if b.pos.y > winHeight[]/2.0
         scoreB += 1
         audioEnabled && SDL2.Mix_PlayChannel( Int32(-1), scoreSound, Int32(0) )
         b.pos = WorldPos(0,0)
         b.vel = Vector2D(rand(-ballSpeed:ballSpeed), rand([ballSpeed,-ballSpeed]))
-    elseif b.pos.y < -winHeight[]/2.
+    elseif b.pos.y < -winHeight[]/2.0
         scoreA += 1
         audioEnabled && SDL2.Mix_PlayChannel( Int32(-1), scoreSound, Int32(0) )
         b.pos = WorldPos(0,0)
         b.vel = Vector2D(rand(-ballSpeed:ballSpeed), rand([ballSpeed,-ballSpeed]))
     end
-    if b.pos.x > winWidth[]/2.
+    if b.pos.x > winWidth[]/2.0
         b.vel = Vector2D(-abs(b.vel.x), b.vel.y)
-    elseif b.pos.x < -winWidth[]/2.
+    elseif b.pos.x < -winWidth[]/2.0
         b.vel = Vector2D(abs(b.vel.x), b.vel.y)
     end
 end
@@ -151,7 +151,7 @@ function update!(p::Paddle, keys, dt)
     end
 
     # Apply accel
-    p.vel = p.vel .+ Vector2D(accel * dt, 0)
+    p.vel = p.vel + Vector2D(accel * dt, 0)
     if decelerating
         # If decelerating pushed it "past" 0, bring it to a stop.
         if (cur_vel_sign < 0 && p.vel.x > 0
@@ -168,9 +168,9 @@ function update!(p::Paddle, keys, dt)
     end
 
     # Check position bounds.
-    if p.pos.x > winWidth[]/2.
-        p.pos = WorldPos(winWidth[]/2., p.pos.y)
-    elseif p.pos.x < -winWidth[]/2.
-        p.pos = WorldPos(-winWidth[]/2., p.pos.y)
+    if p.pos.x > winWidth[]/2.0
+        p.pos = WorldPos(winWidth[]/2.0, p.pos.y)
+    elseif p.pos.x < -winWidth[]/2.0
+        p.pos = WorldPos(-winWidth[]/2.0, p.pos.y)
     end
 end

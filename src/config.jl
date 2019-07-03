@@ -1,8 +1,6 @@
 # This file allows loading (and dynamically reloading) the configs from
 # the configs file: configs.jl.
 
-include("timing.jl")
-
 config_read_timer = Timer()
 config_print_error_timer = Timer()
 
@@ -19,7 +17,7 @@ config_reload_time_s = 0.5  # seconds
  function reloadConfigsFile()
      if !started(config_read_timer) || elapsed(config_read_timer) > config_reload_time_s
          try
-             include("configs.jl")
+             include(joinpath(@__DIR__, "..", "assets/configs.jl"))
          catch e
              print_config_error("ERROR: Failed to reload Configs File!:\n '$(e)'")
          end
@@ -36,4 +34,3 @@ end
 
 # Run once during compile time.
 reloadConfigsFile()
-

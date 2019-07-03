@@ -502,7 +502,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Build with no certificate\n\nAPPNAME=\"Paddle Battle\"\njl_main=\"$SRCROOT/../main\"\n\n# Build for distribution\njulia ~/.julia/v0.6/ApplicationBuilder/build_app.jl -v \\\n-R \"$SRCROOT/../assets\" -L \"$SRCROOT/../libs/*\"  --icns \"$SRCROOT/../icns.icns\" \\\n--bundle-identifier \"com.nhdalyMadeThis.Paddle-Battle\" \\\n\"$jl_main.jl\" \"$APPNAME\" \"builddir\"\n";
+			shellScript = "# Build with no certificate\n\nAPPNAME=\"Paddle Battle\"\njl_main=\"$SRCROOT/../src/PaddleBattle.jl\"\n\n# Build for distribution\njulia ~/.julia/v0.6/ApplicationBuilder/build_app.jl -v \\\n-R \"$SRCROOT/../assets\" -L \"$SRCROOT/../libs/*\"  --icns \"$SRCROOT/../icns.icns\" \\\n--bundle-identifier \"com.nhdalyMadeThis.Paddle-Battle\" \\\n\"$jl_main\" \"$APPNAME\" \"builddir\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
