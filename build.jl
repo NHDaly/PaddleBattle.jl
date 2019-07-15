@@ -13,6 +13,6 @@ build_app_bundle(jl_main, appname=APPNAME, verbose=true,
                  libraries=["libs/*"], resources=["assets"],
                  snoopfile="main.jl",
                  icns_file="icns.icns", bundle_identifier="com.nhdalyMadeThis.Paddle-Battle",
-                 certificate=dist_certificate, entitlements_file="./entitlements.entitlements",
+                 #certificate=dist_certificate, entitlements_file="./entitlements.entitlements",
                  app_version="1.1.0",
                  )
